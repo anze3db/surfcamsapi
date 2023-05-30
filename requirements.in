@@ -1,0 +1,5 @@
+httpx
+django
+django-ninja
+# Dev requirements
+black
