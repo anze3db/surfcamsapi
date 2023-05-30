@@ -1,5 +1,8 @@
-httpx
 django
+django-environ
 django-ninja
+httpx
+sentry-sdk
+uvicorn
 # Dev requirements
 black

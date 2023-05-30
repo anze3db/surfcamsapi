@@ -14,16 +14,23 @@ certifi==2023.5.7
     # via
     #   httpcore
     #   httpx
+    #   sentry-sdk
 click==8.1.3
-    # via black
+    # via
+    #   black
+    #   uvicorn
 django==4.2.1
     # via
     #   -r requirements.in
     #   django-ninja
+django-environ==0.10.0
+    # via -r requirements.in
 django-ninja==0.22.1
     # via -r requirements.in
 h11==0.14.0
-    # via httpcore
+    # via
+    #   httpcore
+    #   uvicorn
 httpcore==0.17.2
     # via httpx
 httpx==0.24.1
@@ -42,6 +49,8 @@ platformdirs==3.5.1
     # via black
 pydantic==1.10.8
     # via django-ninja
+sentry-sdk==1.24.0
+    # via -r requirements.in
 sniffio==1.3.0
     # via
     #   anyio
@@ -51,3 +60,7 @@ sqlparse==0.4.4
     # via django
 typing-extensions==4.6.2
     # via pydantic
+urllib3==1.26.16
+    # via sentry-sdk
+uvicorn==0.22.0
+    # via -r requirements.in
