@@ -4,5 +4,6 @@ django-ninja
 httpx
 sentry-sdk
 uvicorn
+whitenoise
 # Dev requirements
 black
