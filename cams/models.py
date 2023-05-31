@@ -9,6 +9,9 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name_plural = "categories"
+
 
 class Cam(models.Model):
     title = models.CharField(max_length=100)
@@ -18,7 +21,7 @@ class Cam(models.Model):
     subtitle_color = models.CharField(max_length=7)
     background_color = models.CharField(max_length=7)
 
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    categories = models.ManyToManyField(Category)
 
     def __str__(self):
         return self.title + " - " + self.subtitle
