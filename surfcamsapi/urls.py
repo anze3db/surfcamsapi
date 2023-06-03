@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.db.models import Prefetch
 from django.urls import path
@@ -39,6 +40,21 @@ class CategoriesSchema(Schema):
     cams: list[CamSchema] = Field(..., alias="cam_set")
 
 
+class HealthSchema(Schema):
+    message: str
+
+
+@api.exception_handler(AssertionError)
+def service_unavailable(request, exc):
+    return api.create_response(
+        request,
+        {"message": "Please retry later"}
+        if not settings.DEBUG
+        else {"message": str(exc)},
+        status=503,
+    )
+
+
 class CamsSchema(Schema):
     categories: list[CategoriesSchema]
 
@@ -50,6 +66,12 @@ def cams(request):
     )
 
     return {"categories": list(categories)}
+
+
+@api.get("/health", response=HealthSchema)
+def health(request):
+    assert Category.objects.count() > 0, "Not enough categories"
+    return {"message": "ok"}
 
 
 urlpatterns = [
