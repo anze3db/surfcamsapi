@@ -16,14 +16,35 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from ninja import NinjaAPI
+from ninja import Field, NinjaAPI, Schema
+from cams.models import Category
 
 api = NinjaAPI()
 
 
-@api.get("/add")
-def add(request, a: int, b: int):
-    return {"result": a + b}
+class CamSchema(Schema):
+    title: str
+    subTitle: str = Field(..., alias="subtitle")
+    url: str
+    titleColor: str = Field(..., alias="title_color")
+    subTitleColor: str = Field(..., alias="subtitle_color")
+    backgroundColor: str = Field(..., alias="background_color")
+
+
+class CategoriesSchema(Schema):
+    title: str
+    color: str
+    cams: list[CamSchema] = Field(..., alias="cam_set")
+
+
+class CamsSchema(Schema):
+    categories: list[CategoriesSchema]
+
+
+@api.get("/cams.json", response=CamsSchema)
+def cams(request):
+    categories = Category.objects.all()
+    return {"categories": list(categories)}
 
 
 urlpatterns = [
