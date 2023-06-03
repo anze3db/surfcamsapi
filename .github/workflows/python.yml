@@ -26,8 +26,8 @@ jobs:
         run: pip install pip-tools && pip-sync requirements.txt
       - name: Collect static
         run: python manage.py collectstatic --no-input
-      # - name: Run Tests
-      #   run: python manage.py test
+      - name: Run Tests
+        run: pytest
   deploy:
     runs-on: ubuntu-22.04
     needs: test
