@@ -49,5 +49,5 @@ def cams(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api2/", api.urls),
+    path("api/", api.urls),
 ]
