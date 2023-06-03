@@ -9,3 +9,5 @@ whitenoise
 # Dev requirements
 black
 ruff
+pytest
+pytest-django

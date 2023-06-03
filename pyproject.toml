@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--verbose --reuse-db --durations=3"
+testpaths = ["cams"]
+python_files = ["tests.py"]
+DJANGO_SETTINGS_MODULE = "surfcamsapi.settings"
