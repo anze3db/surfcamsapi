@@ -97,7 +97,7 @@ STORAGES = {
     },
 }
 
-WHITENOISE_ROOT = BASE_DIR / "whitenoise_root"
+# WHITENOISE_ROOT = BASE_DIR / "whitenoise_root"
 
 STATIC_ROOT = BASE_DIR / "staticroot"
 
