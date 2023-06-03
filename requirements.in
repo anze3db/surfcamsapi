@@ -8,3 +8,4 @@ uvicorn
 whitenoise
 # Dev requirements
 black
+ruff
