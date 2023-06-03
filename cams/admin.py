@@ -1,7 +1,11 @@
+from adminsortable2.admin import (
+    SortableAdminBase,
+    SortableAdminMixin,
+    SortableInlineAdminMixin,
+)
 from django.contrib import admin
 
 from cams.models import Cam, Category
-from adminsortable2.admin import SortableInlineAdminMixin, SortableAdminBase
 
 
 class CamInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -10,8 +14,8 @@ class CamInline(SortableInlineAdminMixin, admin.TabularInline):
 
 
 # Register your models here.
-class CategoryAdmin(SortableAdminBase, admin.ModelAdmin):
-    list_display = ("title", "color")
+class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
+    list_display = ("title", "color", "order")
     inlines = (CamInline,)
 
 
