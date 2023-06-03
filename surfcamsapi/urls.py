@@ -15,9 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.db.models import Prefetch
 from django.urls import path
 from ninja import Field, NinjaAPI, Schema
-from cams.models import Category
+
+from cams.models import Cam, Category
 
 api = NinjaAPI()
 
@@ -43,7 +45,10 @@ class CamsSchema(Schema):
 
 @api.get("/cams.json", response=CamsSchema)
 def cams(request):
-    categories = Category.objects.all()
+    categories = Category.objects.all().prefetch_related(
+        Prefetch("cam_set", queryset=Cam.objects.order_by("categorycam__order"))
+    )
+
     return {"categories": list(categories)}
 
 
