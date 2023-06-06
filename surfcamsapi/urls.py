@@ -60,10 +60,13 @@ class CamsSchema(Schema):
 
 
 @api.get("/cams.json", response=CamsSchema)
-def cams(request):
-    categories = Category.objects.all().prefetch_related(
-        Prefetch("cam_set", queryset=Cam.objects.order_by("categorycam__order"))
-    )
+async def cams(request):
+    categories = [
+        cat
+        async for cat in Category.objects.all().prefetch_related(
+            Prefetch("cam_set", queryset=Cam.objects.order_by("categorycam__order"))
+        )
+    ]
 
     return {"categories": list(categories)}
 
