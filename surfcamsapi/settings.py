@@ -42,6 +42,8 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS: list[str] = env("ALLOWED_HOSTS").split(",")
 
+HOST = env("HOST", default="http://localhost:8000")
+
 CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS").split(",")
 
 

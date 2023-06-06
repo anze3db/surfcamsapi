@@ -32,12 +32,17 @@ class CamSchema(Schema):
     titleColor: str = Field(..., alias="title_color")
     subTitleColor: str = Field(..., alias="subtitle_color")
     backgroundColor: str = Field(..., alias="background_color")
+    detailUrl: str = Field(..., alias="detail_url")
 
 
 class CategoriesSchema(Schema):
     title: str
     color: str
     cams: list[CamSchema] = Field(..., alias="cam_set")
+
+
+class DetailSchema(Schema):
+    id: int
 
 
 class HealthSchema(Schema):
@@ -75,6 +80,12 @@ async def cams(request):
 async def health(request):
     assert await Category.objects.acount() > 0, "Not enough categories"
     return {"message": "ok"}
+
+
+@api.get("/cams/{cam_id}", response=DetailSchema, url_name="cam_detail")
+async def get_detail(request, cam_id: int):
+    cam = await Cam.objects.aget(id=cam_id)
+    return DetailSchema(id=cam.id)
 
 
 urlpatterns = [

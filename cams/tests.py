@@ -12,9 +12,9 @@ class TestCamsApi(TestCase):
         cls.cat2 = cat2 = Category.objects.create(title="Cat 2", color="#000000")
         cls.cat3 = Category.objects.create(title="Cat 3", color="#000000")
 
-        cam1 = Cam.objects.create(title="Cam 1")
-        cam2 = Cam.objects.create(title="Cam 2")
-        cam3 = Cam.objects.create(title="Cam 3")
+        cls.cam1 = cam1 = Cam.objects.create(title="Cam 1")
+        cls.cam2 = cam2 = Cam.objects.create(title="Cam 2")
+        cls.cam3 = cam3 = Cam.objects.create(title="Cam 3")
         cam4 = Cam.objects.create(title="Cam 4")
 
         cam1.categories.add(cat1)
@@ -31,7 +31,10 @@ class TestCamsApi(TestCase):
                 {
                     "title": cat["title"],
                     "color": cat["color"],
-                    "cams": [{"title": cam["title"]} for cam in cat["cams"]],
+                    "cams": [
+                        {"title": cam["title"], "detailUrl": cam["detailUrl"]}
+                        for cam in cat["cams"]
+                    ],
                 }
                 for cat in response.json()["categories"]
             ],
@@ -39,12 +42,30 @@ class TestCamsApi(TestCase):
                 {
                     "title": "Cat 1",
                     "color": "#000000",
-                    "cams": [{"title": "Cam 1"}, {"title": "Cam 3"}],
+                    "cams": [
+                        {
+                            "title": "Cam 1",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam1.id}/",
+                        },
+                        {
+                            "title": "Cam 3",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}/",
+                        },
+                    ],
                 },
                 {
                     "title": "Cat 2",
                     "color": "#000000",
-                    "cams": [{"title": "Cam 2"}, {"title": "Cam 3"}],
+                    "cams": [
+                        {
+                            "title": "Cam 2",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam2.id}/",
+                        },
+                        {
+                            "title": "Cam 3",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}/",
+                        },
+                    ],
                 },
                 {"title": "Cat 3", "color": "#000000", "cams": []},
             ],

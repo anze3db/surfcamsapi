@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.db import models
+from django.urls import reverse
 
 
 # Create your models here.
@@ -31,6 +33,9 @@ class Cam(models.Model):
 
     def __str__(self):
         return self.title + " - " + self.subtitle
+
+    def detail_url(self):
+        return f"{settings.HOST}{reverse('api-1.0.0:cam_detail', args=[self.id])}"
 
 
 class CategoryCam(models.Model):
