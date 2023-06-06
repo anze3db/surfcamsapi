@@ -69,17 +69,12 @@ def cams(request):
 
 
 @api.get("/health", response=HealthSchema)
-def health(request):
-    assert Category.objects.count() > 0, "Not enough categories"
+async def health(request):
+    assert await Category.objects.acount() > 0, "Not enough categories"
     return {"message": "ok"}
-
-
-def trigger_error(request):
-    division_by_zero = 1 / 0
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", api.urls),
-    path("sentry-debug/", trigger_error),
 ]
