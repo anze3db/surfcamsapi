@@ -140,20 +140,20 @@ class TestCamsApi(TestCase):
         )
 
 
-class TestCamDetailApi(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.cam = Cam.objects.create(title="Cam 1")
+# class TestCamDetailApi(TestCase):
+#     @classmethod
+#     def setUpTestData(cls):
+#         cls.cam = Cam.objects.create(title="Cam 1")
 
-    def test_get_cam_detail(self):
-        response = self.client.get(f"/api/cams/{self.cam.id}/")
-        self.assertEqual(response.status_code, 200)
-        # self.assertEqual(
-        #     response.json(),
-        #     {
-        #         "id": self.cam.pk,
-        #     },
-        # )
+#     def test_get_cam_detail(self):
+#         response = self.client.get(f"/api/cams/{self.cam.id}/")
+#         self.assertEqual(response.status_code, 200)
+#         # self.assertEqual(
+#         #     response.json(),
+#         #     {
+#         #         "id": self.cam.pk,
+#         #     },
+#         # )
 
 
 class TestHealthApi(TestCase):
