@@ -14,6 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from datetime import datetime
+
 import httpx
 from django.conf import settings
 from django.contrib import admin
@@ -87,7 +89,32 @@ async def health(request):
 
 async def get_detail(request, cam_id: int):
     cam = await Cam.objects.aget(id=cam_id)
-    return render(request, "detail.html", {"cam": cam})
+    baseurl = "https://services.surfline.com/kbyg/spots/forecasts/tides"
+    tides = []
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            baseurl,
+            timeout=5.0,
+            params={
+                "spotId": "5842041f4e65fad6a7708bc0",
+                "days": 2,
+            },
+        )
+        json = response.json()
+        for tide in json["data"]["tides"]:
+            if tide["type"] == "NORMAL":
+                continue
+            tides.append(
+                {
+                    "date": datetime.utcfromtimestamp(
+                        tide["timestamp"] + tide["utcOffset"] * 3600
+                    ),
+                    "type": tide["type"],
+                    "height": str(tide["height"])
+                    + json["associated"]["units"]["tideHeight"],
+                }
+            )
+        return render(request, "detail.html", {"cam": cam, "tides": tides})
 
 
 urlpatterns = [

@@ -9,6 +9,21 @@
 <body>
     <main class="container">
         <h1>{{cam.title}}</h1>
+        <table>
+        {% for tide in tides %}
+        <tr>
+            <td>
+                {{tide.date}}
+            </td>
+            <td>
+                {{tide.type}}
+            </td>
+            <td>
+                {{tide.height}}
+            </td>
+        </tr>
+        {% endfor %}
+        </table>
     </main>
 </body>
 </html>
