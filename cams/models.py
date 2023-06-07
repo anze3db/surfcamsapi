@@ -35,7 +35,7 @@ class Cam(models.Model):
         return self.title + " - " + self.subtitle
 
     def detail_url(self):
-        return f"{settings.HOST}{reverse('api-1.0.0:cam_detail', args=[self.id])}"
+        return f"{settings.HOST}{reverse('cam_detail', args=[self.id])}"
 
 
 class CategoryCam(models.Model):

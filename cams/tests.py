@@ -45,11 +45,11 @@ class TestCamsApi(TestCase):
                     "cams": [
                         {
                             "title": "Cam 1",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam1.id}",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam1.id}/",
                         },
                         {
                             "title": "Cam 3",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}/",
                         },
                     ],
                 },
@@ -59,11 +59,11 @@ class TestCamsApi(TestCase):
                     "cams": [
                         {
                             "title": "Cam 2",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam2.id}",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam2.id}/",
                         },
                         {
                             "title": "Cam 3",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}/",
                         },
                     ],
                 },
@@ -140,7 +140,23 @@ class TestCamsApi(TestCase):
         )
 
 
-class TestHealth(TestCase):
+class TestCamDetailApi(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.cam = Cam.objects.create(title="Cam 1")
+
+    def test_get_cam_detail(self):
+        response = self.client.get(f"/api/cams/{self.cam.id}/")
+        self.assertEqual(response.status_code, 200)
+        # self.assertEqual(
+        #     response.json(),
+        #     {
+        #         "id": self.cam.pk,
+        #     },
+        # )
+
+
+class TestHealthApi(TestCase):
     def test_health(self):
         categories = [Category(title=f"Cat {i}") for i in range(3)]
         Category.objects.bulk_create(categories)
