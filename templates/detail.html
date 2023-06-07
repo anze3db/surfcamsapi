@@ -9,21 +9,39 @@
 <body>
     <main class="container">
         <h1>{{cam.title}}</h1>
-        <table>
-        {% for tide in tides %}
-        <tr>
-            <td>
-                {{tide.date}}
-            </td>
-            <td>
-                {{tide.type}}
-            </td>
-            <td>
-                {{tide.height}}
-            </td>
-        </tr>
-        {% endfor %}
-        </table>
+        <div class="grid">
+            <div>
+                <table>
+                {% for tide in tides %}
+                <tr>
+                    <td>
+                        {% if tide.type == "HIGH" %}▲{%else%}▼{% endif %} {{tide.type | title}}
+                    </td>
+                    <td>
+                        {{tide.date | date:"H:i"}}
+                    </td>
+                    <td style="text-align: right;">
+                        {{tide.height}}
+                    </td>
+                </tr>
+                {% endfor %}
+                </table>
+            </div>
+            <div>
+                <table>
+                {% for sun in sunlight %}
+                <tr>
+                    <td>
+                        {{ sun.type | title }}
+                    </td>
+                    <td style="text-align: right;">
+                        {{ sun.date | date:"H:i" }}
+                    </td>
+                </tr>
+                {% endfor %}
+                </table>
+            </div>
+        </div>
     </main>
 </body>
 </html>

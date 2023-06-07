@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import asyncio
 from datetime import datetime
 
 import httpx
@@ -89,32 +90,79 @@ async def health(request):
 
 async def get_detail(request, cam_id: int):
     cam = await Cam.objects.aget(id=cam_id)
-    baseurl = "https://services.surfline.com/kbyg/spots/forecasts/tides"
+    baseurl = "https://services.surfline.com/kbyg/spots/forecasts/"
     tides = []
+    sunlight = []
     async with httpx.AsyncClient() as client:
-        response = await client.get(
-            baseurl,
+        tides_request = client.get(
+            baseurl + "tides",
             timeout=5.0,
             params={
                 "spotId": "5842041f4e65fad6a7708bc0",
                 "days": 2,
             },
         )
-        json = response.json()
-        for tide in json["data"]["tides"]:
+        sunlight_request = client.get(
+            baseurl + "sunlight",
+            timeout=5.0,
+            params={
+                "spotId": "5842041f4e65fad6a7708bc0",
+                "days": 1,
+            },
+        )
+        tide_response, sunlight_response = await asyncio.gather(
+            tides_request, sunlight_request
+        )
+        for tide in tide_response.json()["data"]["tides"]:
             if tide["type"] == "NORMAL":
                 continue
+
+            date = datetime.utcfromtimestamp(
+                tide["timestamp"] + tide["utcOffset"] * 3600
+            )
+
+            if date.day != datetime.utcnow().day:
+                continue
+
             tides.append(
                 {
-                    "date": datetime.utcfromtimestamp(
-                        tide["timestamp"] + tide["utcOffset"] * 3600
-                    ),
+                    "date": date,
                     "type": tide["type"],
                     "height": str(tide["height"])
-                    + json["associated"]["units"]["tideHeight"],
+                    + tide_response.json()["associated"]["units"]["tideHeight"],
                 }
             )
-        return render(request, "detail.html", {"cam": cam, "tides": tides})
+        for sun in sunlight_response.json()["data"]["sunlight"]:
+            sunlight = [
+                {
+                    "date": datetime.utcfromtimestamp(
+                        sun["dawn"] + sun["dawnUTCOffset"] * 3600
+                    ),
+                    "type": "🌘 First Light",
+                },
+                {
+                    "date": datetime.utcfromtimestamp(
+                        sun["sunrise"] + sun["sunriseUTCOffset"] * 3600
+                    ),
+                    "type": "🌖 Sunrise",
+                },
+                {
+                    "date": datetime.utcfromtimestamp(
+                        sun["sunset"] + sun["sunsetUTCOffset"] * 3600
+                    ),
+                    "type": "🌔 Sunset",
+                },
+                {
+                    "date": datetime.utcfromtimestamp(
+                        sun["dusk"] + sun["duskUTCOffset"] * 3600
+                    ),
+                    "type": "🌒 Last Light",
+                },
+            ]
+
+        return render(
+            request, "detail.html", {"cam": cam, "tides": tides, "sunlight": sunlight}
+        )
 
 
 urlpatterns = [
