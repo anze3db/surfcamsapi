@@ -14,9 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import httpx
 from django.conf import settings
 from django.contrib import admin
 from django.db.models import Prefetch
+from django.shortcuts import render
 from django.urls import path
 from ninja import Field, NinjaAPI, Schema
 
@@ -43,6 +45,7 @@ class CategoriesSchema(Schema):
 
 class DetailSchema(Schema):
     id: int
+    tides: dict
 
 
 class HealthSchema(Schema):
@@ -82,13 +85,13 @@ async def health(request):
     return {"message": "ok"}
 
 
-@api.get("/cams/{cam_id}", response=DetailSchema, url_name="cam_detail")
 async def get_detail(request, cam_id: int):
     cam = await Cam.objects.aget(id=cam_id)
-    return DetailSchema(id=cam.id)
+    return render(request, "detail.html", {"cam": cam})
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/cams/<int:cam_id>/", get_detail, name="cam_detail"),
     path("api/", api.urls),
 ]
