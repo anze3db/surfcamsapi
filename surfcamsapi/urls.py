@@ -46,11 +46,6 @@ class CategoriesSchema(Schema):
     cams: list[CamSchema] = Field(..., alias="cam_set")
 
 
-class DetailSchema(Schema):
-    id: int
-    tides: dict
-
-
 class HealthSchema(Schema):
     message: str
 
