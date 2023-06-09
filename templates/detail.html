@@ -9,21 +9,6 @@
     <body>
         <main class="container">
             <h1>{{ cam.title }}</h1>
-            <div>
-                <table>
-                    {% for wind, wave in wind_and_waves %}
-                        <tr>
-                            <td style="padding:  0px 0px; width: 12px; transform: rotate(-90deg); font-size: 10px;">{{ wave.date | date:"H:i" }}</td>
-                            <td style="padding: 10px 8px; font-size: 12px; text-align: center; background-color: #58B0E1; color: white;">{{ wave.min|floatformat:"1" }}-{{wave.max| floatformat:"1"}}m</td>
-                            <td style="padding: 10px 8px; line-height: 12px;"><span style="font-size: 12px;"><strong>{{ wave.primary_swell_size | floatformat:"1" }}</strong>m</td>
-                            <td style="padding: 10px 8px; font-size: 12px;"><strong>{{ wave.primary_swell_period }}</strong>s</span></td>
-                            <td style="padding: 10px 8px; text-align: center; line-height: 18px;"><div style="transform: rotate(calc({{ wave.primary_swell_direction | floatformat:"0" }}deg - 270deg));">➤</div><span style="font-size:10px;">{{ wave.primary_swell_direction | floatformat:"0" }}°</span></td>
-                            <td style="padding: 10px 8px;"><div style="float: left; font-size: 12px; font-weight: bold;">{{ wind.speed|floatformat:"0" }}</div><div style="padding: 0px 0px 0px 4px; float: left; font-size:8px; line-height: 8px;">{{ wind.gust|floatformat:"0" }}<br>kph</div></td>
-                            <td style="padding: 10px 8px; background-color: #55AB68; color: white; text-align: center; line-height: 12px;"><div style="transform: rotate(calc({{ wind.direction | floatformat:"0" }}deg - 270deg));">➤</div><span style="font-size: 10px">{{ wind.direction_type | title }}</style></td> <!-- D8833B -->
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
             <div class="grid">
                 <div>
                     <table>
@@ -54,6 +39,60 @@
                     </table>
                 </div>
             </div>
-        </main>
-    </body>
-</html>
+            <div>
+                <table>
+                    {% for wind, wave in wind_and_waves %}
+                        <tr>
+                            {% if wind.break %}
+                                <td colspan="7">{{ wind.date | date:"l, M j" }}</td>
+                            {% else %}
+                                <td style="padding:  0px 0px;
+                                           width: 12px;
+                                           transform: rotate(-90deg);
+                                           font-size: 10px">{{ wind.date | date:"H:i" }}</td>
+                                <td style="padding: 10px 8px;
+                                           font-size: 12px;
+                                           text-align: center;
+                                           background-color: #58B0E1;
+                                           color: white">
+                                    {{ wave.min|floatformat:"1" }}-{{ wave.max| floatformat:"1" }}m
+                                </td>
+                                <td style="padding: 10px 8px; line-height: 12px;">
+                                    <span style="font-size: 12px;"><strong>{{ wave.primary_swell_size | floatformat:"1" }}</strong>m
+                                    </td>
+                                    <td style="padding: 10px 8px; font-size: 12px;">
+                                        <strong>{{ wave.primary_swell_period }}</strong>s</span>
+                                </td>
+                                <td style="padding: 10px 8px; text-align: center; line-height: 18px;">
+                                    <div style="transform: rotate(calc({{ wave.primary_swell_direction | floatformat:"0" }}deg - 270deg))">➤</div>
+                                    <span style="font-size:10px;">{{ wave.primary_swell_direction | floatformat:"0" }}°</span>
+                                </td>
+                                <td style="padding: 10px 8px;">
+                                    <div style="float: left; font-size: 12px; font-weight: bold;">{{ wind.speed|floatformat:"0" }}</div>
+                                    <div style="padding: 0px 0px 0px 4px;
+                                                float: left;
+                                                font-size:8px;
+                                                line-height: 8px">
+                                        {{ wind.gust|floatformat:"0" }}
+                                        <br>
+                                        kph
+                                    </div>
+                                </td>
+                                <td style="padding: 10px 8px;
+                                           background-color: #55AB68;
+                                           color: white;
+                                           text-align: center;
+                                           line-height: 12px">
+                                    <div style="transform: rotate(calc({{ wind.direction | floatformat:"0" }}deg - 270deg))">➤</div>
+                                    <span style="font-size: 10px">{{ wind.direction_type | title }}
+                                        </style>
+                                    </td>
+                                    <!-- D8833B -->
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </main>
+        </body>
+    </html>

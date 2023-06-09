@@ -88,6 +88,7 @@ class SurflineFetcher:
         self.base_url = "https://services.surfline.com/kbyg/spots/forecasts/"
         self.client = client
         self.params = {"spotId": spot_id, "days": 1}
+        self.day_params = {"spotId": spot_id, "days": 3}
         self.spot_id = spot_id
 
     async def fetch_tides(self):
@@ -157,14 +158,18 @@ class SurflineFetcher:
         wind_response = await self.client.get(
             self.base_url + "wind",
             timeout=5.0,
-            params=self.params,
+            params=self.day_params,
         )
         res = []
         data = wind_response.json()["data"]["wind"]
+        prev_hour = 24
         for d in data:
             date = datetime.utcfromtimestamp(d["timestamp"] + d["utcOffset"] * 3600)
-            if date.hour % 3 != 0:
+            if date.hour % 3 != 0 or date.hour < 4:
                 continue
+            if date.hour < prev_hour:
+                res.append({"date": date, "break": True})
+            prev_hour = date.hour
             res.append(
                 {
                     "date": date,
@@ -176,19 +181,23 @@ class SurflineFetcher:
                 }
             )
         return res
-    
+
     async def fetch_waves(self):
         wave_response = await self.client.get(
             self.base_url + "wave",
             timeout=5.0,
-            params=self.params,
+            params=self.day_params,
         )
         res = []
         data = wave_response.json()["data"]["wave"]
+        prev_hour = 24
         for d in data:
             date = datetime.utcfromtimestamp(d["timestamp"] + d["utcOffset"] * 3600)
             if date.hour % 3 != 0 or date.hour < 4:
                 continue
+            if date.hour < prev_hour:
+                res.append({"date": date, "break": True})
+            prev_hour = date.hour
             res.append(
                 {
                     "date": date,
@@ -207,7 +216,10 @@ class SurflineFetcher:
         if not self.spot_id:
             return [], [], [], []
         return await asyncio.gather(
-            self.fetch_tides(), self.fetch_sunlight(), self.fetch_wind(), self.fetch_waves()
+            self.fetch_tides(),
+            self.fetch_sunlight(),
+            self.fetch_wind(),
+            self.fetch_waves(),
         )
 
 
@@ -220,7 +232,12 @@ async def get_detail(request, cam_id: int):
     return render(
         request,
         "detail.html",
-        {"cam": cam, "tides": tides, "sunlight": sunlight, "wind_and_waves": zip(wind, waves)},
+        {
+            "cam": cam,
+            "tides": tides,
+            "sunlight": sunlight,
+            "wind_and_waves": zip(wind, waves),
+        },
     )
 
 
