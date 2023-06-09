@@ -1,47 +1,59 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{% static 'pico.min.css' %}">
-</head>
-<body>
-    <main class="container">
-        <h1>{{cam.title}}</h1>
-        <div class="grid">
-            <div>
-                <table>
-                {% for tide in tides %}
-                <tr>
-                    <td>
-                        {% if tide.type == "HIGH" %}▲{%else%}▼{% endif %} {{tide.type | title}}
-                    </td>
-                    <td>
-                        {{tide.date | date:"H:i"}}
-                    </td>
-                    <td style="text-align: right;">
-                        {{tide.height}}
-                    </td>
-                </tr>
-                {% endfor %}
-                </table>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'pico.min.css' %}">
+    </head>
+    <body>
+        <main class="container">
+            <h1>{{ cam.title }}</h1>
+            <div class="grid">
+                <div>
+                    <table>
+                        {% for tide in tides %}
+                            <tr>
+                                <td>
+                                    {% if tide.type == "HIGH" %}
+                                        ▲
+                                    {% else %}
+                                        ▼
+                                    {% endif %}
+                                    {{ tide.type | title }}
+                                </td>
+                                <td>{{ tide.date | date:"H:i" }}</td>
+                                <td style="text-align: right;">{{ tide.height }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+                <div>
+                    <table>
+                        {% for sun in sunlight %}
+                            <tr>
+                                <td>{{ sun.type | title }}</td>
+                                <td style="text-align: right;">{{ sun.date | date:"H:i" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
-            <div>
-                <table>
-                {% for sun in sunlight %}
-                <tr>
-                    <td>
-                        {{ sun.type | title }}
-                    </td>
-                    <td style="text-align: right;">
-                        {{ sun.date | date:"H:i" }}
-                    </td>
-                </tr>
-                {% endfor %}
-                </table>
+                <div>
+                    <table>
+                        {% for wind, wave in wind_and_waves %}
+                            <tr>
+                                <td style="width: 12px; transform: rotate(-90deg); font-size: 12px; padding: 0px 0px 0px 0px;">{{ wave.date | date:"H:i" }}</td>
+                                <td style="padding: 10px 2px 10px 2px; text-align: center; background-color: #58B0E1; color: white;">{{ wave.min|floatformat:"1" }} - {{wave.max| floatformat:"1"}}m</td>
+                                <td style="line-height: 14px;"><span style="font-size: 18px;"><strong>{{ wave.primary_swell_size }}</strong>m <strong>{{ wave.primary_swell_period }}</strong>s</span><br><span style="font-size: 12px">{{ wave.human }}</span></td>
+                                <td style="text-align: center; line-height: 18px;"><div style="transform: rotate({{ wave.primary_swell_direction | floatformat:"0" }}deg);">➤</div>{{ wave.primary_swell_direction | floatformat:"0" }}°</td>
+                                <td><div style="float: left; font-size: 22px;">{{ wind.speed|floatformat:"0" }}</div><div style="padding: 6px 0px 0px 4px; float: left; font-size:10px; line-height: 10px;">{{ wind.gust|floatformat:"0" }}<br>kph</div></td>
+                                <td style="padding: 10px 2px 10px 2px; background-color: #55AB68; color: white; text-align: center; line-height: 18px;"><div style="transform: rotate({{ wind.direction | floatformat:"0" }}deg);">➤</div>{{ wind.direction_type | title }}</td> <!-- D8833B -->
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
-        </div>
-    </main>
-</body>
+        </main>
+    </body>
 </html>

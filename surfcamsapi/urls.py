@@ -83,31 +83,20 @@ async def health(request):
     return {"message": "ok"}
 
 
-async def get_detail(request, cam_id: int):
-    cam = await Cam.objects.aget(id=cam_id)
-    baseurl = "https://services.surfline.com/kbyg/spots/forecasts/"
-    tides = []
-    sunlight = []
-    async with httpx.AsyncClient() as client:
-        tides_request = client.get(
-            baseurl + "tides",
+class SurflineFetcher:
+    def __init__(self, spot_id: str, client):
+        self.base_url = "https://services.surfline.com/kbyg/spots/forecasts/"
+        self.client = client
+        self.params = {"spotId": spot_id, "days": 1}
+        self.spot_id = spot_id
+
+    async def fetch_tides(self):
+        tide_response = await self.client.get(
+            self.base_url + "tides",
             timeout=5.0,
-            params={
-                "spotId": "5842041f4e65fad6a7708bc0",
-                "days": 2,
-            },
+            params=self.params,
         )
-        sunlight_request = client.get(
-            baseurl + "sunlight",
-            timeout=5.0,
-            params={
-                "spotId": "5842041f4e65fad6a7708bc0",
-                "days": 1,
-            },
-        )
-        tide_response, sunlight_response = await asyncio.gather(
-            tides_request, sunlight_request
-        )
+        res = []
         for tide in tide_response.json()["data"]["tides"]:
             if tide["type"] == "NORMAL":
                 continue
@@ -119,7 +108,7 @@ async def get_detail(request, cam_id: int):
             if date.day != datetime.utcnow().day:
                 continue
 
-            tides.append(
+            res.append(
                 {
                     "date": date,
                     "type": tide["type"],
@@ -127,8 +116,17 @@ async def get_detail(request, cam_id: int):
                     + tide_response.json()["associated"]["units"]["tideHeight"],
                 }
             )
+        return res
+
+    async def fetch_sunlight(self):
+        sunlight_response = await self.client.get(
+            self.base_url + "sunlight",
+            timeout=5.0,
+            params=self.params,
+        )
+
         for sun in sunlight_response.json()["data"]["sunlight"]:
-            sunlight = [
+            return [
                 {
                     "date": datetime.utcfromtimestamp(
                         sun["dawn"] + sun["dawnUTCOffset"] * 3600
@@ -155,9 +153,75 @@ async def get_detail(request, cam_id: int):
                 },
             ]
 
-        return render(
-            request, "detail.html", {"cam": cam, "tides": tides, "sunlight": sunlight}
+    async def fetch_wind(self):
+        wind_response = await self.client.get(
+            self.base_url + "wind",
+            timeout=5.0,
+            params=self.params,
         )
+        res = []
+        data = wind_response.json()["data"]["wind"]
+        for d in data:
+            date = datetime.utcfromtimestamp(d["timestamp"] + d["utcOffset"] * 3600)
+            if date.hour % 3 != 0:
+                continue
+            res.append(
+                {
+                    "date": date,
+                    "direction": d["direction"],
+                    "direction_type": d["directionType"],
+                    "speed": d["speed"],
+                    "gust": d["gust"],
+                    "score": d["optimalScore"],
+                }
+            )
+        return res
+    
+    async def fetch_waves(self):
+        wave_response = await self.client.get(
+            self.base_url + "wave",
+            timeout=5.0,
+            params=self.params,
+        )
+        res = []
+        data = wave_response.json()["data"]["wave"]
+        for d in data:
+            date = datetime.utcfromtimestamp(d["timestamp"] + d["utcOffset"] * 3600)
+            if date.hour % 3 != 0:
+                continue
+            res.append(
+                {
+                    "date": date,
+                    "min": d["surf"]["min"],
+                    "max": d["surf"]["max"],
+                    "human": d["surf"]["humanRelation"],
+                    "score": d["surf"]["optimalScore"],
+                    "primary_swell_size": d["swells"][0]["height"],
+                    "primary_swell_period": d["swells"][0]["period"],
+                    "primary_swell_direction": d["swells"][0]["direction"],
+                }
+            )
+        return res
+
+    async def fetch_all(self):
+        if not self.spot_id:
+            return [], [], [], []
+        return await asyncio.gather(
+            self.fetch_tides(), self.fetch_sunlight(), self.fetch_wind(), self.fetch_waves()
+        )
+
+
+async def get_detail(request, cam_id: int):
+    cam = await Cam.objects.aget(id=cam_id)
+    async with httpx.AsyncClient() as client:
+        fetcher = SurflineFetcher(cam.spot_id, client)
+        tides, sunlight, wind, waves = await fetcher.fetch_all()
+
+    return render(
+        request,
+        "detail.html",
+        {"cam": cam, "tides": tides, "sunlight": sunlight, "wind_and_waves": zip(wind, waves)},
+    )
 
 
 urlpatterns = [
