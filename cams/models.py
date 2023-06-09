@@ -30,6 +30,7 @@ class Cam(models.Model):
     background_color = models.CharField(max_length=7)
 
     categories = models.ManyToManyField(Category, through="CategoryCam")
+    spot_id = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.title + " - " + self.subtitle
