@@ -187,7 +187,7 @@ class SurflineFetcher:
         data = wave_response.json()["data"]["wave"]
         for d in data:
             date = datetime.utcfromtimestamp(d["timestamp"] + d["utcOffset"] * 3600)
-            if date.hour % 3 != 0:
+            if date.hour % 3 != 0 or date.hour < 4:
                 continue
             res.append(
                 {
