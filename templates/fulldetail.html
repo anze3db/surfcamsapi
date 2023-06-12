@@ -12,7 +12,12 @@
     <main class="container">
         <script>
   var video = document.getElementById('video');
-  video.setAttribute('width', document.body.clientWidth - 20);
+  window.addEventListener('resize', function (event) {
+      video.setAttribute('width', document.body.clientWidth - 15);
+      video.setAttribute('height', window.innerHeight);
+  });
+  video.setAttribute('width', document.body.clientWidth - 15);
+  video.setAttribute('height', window.innerHeight);
   var videoSrc = '{{ cam.url }}';
   if (Hls.isSupported()) {
     var hls = new Hls();
