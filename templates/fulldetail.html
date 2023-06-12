@@ -7,7 +7,8 @@
                   margin-right: auto"
            id="video"
            muted
-           autoplay>
+           autoplay
+           playsinline>
     </video>
     <main class="container">
         <script>
@@ -26,7 +27,6 @@
     hls.on(Hls.Events.ERROR, function (event, data) {
         console.log("error", event, data)
 });
-video.play()
   }
   // HLS.js is not supported on platforms that do not have Media Source
   // Extensions (MSE) enabled.
