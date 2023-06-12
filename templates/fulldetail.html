@@ -19,6 +19,10 @@
   });
   video.setAttribute('width', document.body.clientWidth - 15);
   video.setAttribute('height', window.innerHeight);
+  video.addEventListener('click', function (event) {
+      // Go back
+    window.location = '{% url "cams" %}';
+  });
   var videoSrc = '{{ cam.url }}';
   if (Hls.isSupported()) {
     var hls = new Hls();

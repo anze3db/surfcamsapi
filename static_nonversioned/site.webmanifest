@@ -1,0 +1,14 @@
+{
+    "name": "Surf Cams",
+    "short_name": "Cams",
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#f9d6bd",
+    "background_color": "#1586c2",
+    "display": "standalone"
+}
