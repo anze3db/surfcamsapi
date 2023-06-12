@@ -241,8 +241,40 @@ async def get_detail(request, cam_id: int):
     )
 
 
+async def get_full_detail(request, cam_id: int):
+    cam = await Cam.objects.aget(id=cam_id)
+    async with httpx.AsyncClient() as client:
+        fetcher = SurflineFetcher(cam.spot_id, client)
+        tides, sunlight, wind, waves = await fetcher.fetch_all()
+
+    return render(
+        request,
+        "fulldetail.html",
+        {
+            "cam": cam,
+            "tides": tides,
+            "sunlight": sunlight,
+            "wind_and_waves": zip(wind, waves),
+        },
+    )
+
+
+async def cams(request):
+    categories = [
+        cat
+        async for cat in Category.objects.all()
+        .prefetch_related(
+            Prefetch("cam_set", queryset=Cam.objects.order_by("categorycam__order"))
+        )
+        .order_by("order")
+    ]
+    return render(request, "cams.html", {"categories": list(categories)})
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/index", cams, name="cams"),
+    path("api/cams/<int:cam_id>/full", get_full_detail, name="cam_full_detail"),
     path("api/cams/<int:cam_id>/", get_detail, name="cam_detail"),
     path("api/", api.urls),
 ]

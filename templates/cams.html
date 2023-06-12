@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+    <main class="container">
+        <h1>Surfcams</h1>
+        {% for category in categories %}
+            <h2>{{ category.title }}</h2>
+            <ul style="column-width: 320px;">
+                {% for cam in category.cam_set.all %}
+                    <li>
+                        <a href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a> - {{ cam.subtitle }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </main>
+{% endblock content %}
