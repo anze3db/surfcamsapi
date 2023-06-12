@@ -8,6 +8,7 @@ uvicorn
 whitenoise
 # Dev requirements
 black
+djlint
 ruff
 pytest
 pytest-django
