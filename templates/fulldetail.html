@@ -43,6 +43,9 @@
   // listened-for when the URL is not on the white-list is 'loadedmetadata'.
   else if (video.canPlayType('application/vnd.apple.mpegurl')) {
     video.src = videoSrc;
+    video.addEventListener('error', function (event, data) {
+        console.log("error", event, data)
+    });
   }
   else {
     console.warn('Your browser does not support MSE');
