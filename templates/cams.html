@@ -4,8 +4,8 @@
     <main class="container">
         <h1>Surfcams</h1>
         {% for category in categories %}
-            <h2>{{ category.title }}</h2>
-            <ul style="column-width: 320px;">
+            <h3 style="color: {{ category.color }}">{{ category.title }}</h3>
+            <ul style="column-width: 235px;">
                 {% for cam in category.cam_set.all %}
                     <li>
                         <a href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a> - {{ cam.subtitle }}
