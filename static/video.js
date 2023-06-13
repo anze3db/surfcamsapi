@@ -10,7 +10,7 @@ window.addEventListener('resize', function (event) {
 setVideoSize(video);
 video.addEventListener('click', function (event) {
     // Go back
-    window.location = django.indexUrl;
+    // window.location = django.indexUrl;
 });
 if (Hls.isSupported()) {
     var hls = new Hls();
