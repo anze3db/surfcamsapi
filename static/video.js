@@ -8,12 +8,8 @@ class Video {
     }
     addListeners() {
         window.addEventListener('resize', this.setSize);
-        this.video.addEventListener('click', function (event) {
-            // Go back
-            // window.location = django.indexUrl;
-        });
         this.video.addEventListener('play', () => {
-            this.setSize()
+            this.setSize();
         });
     }
     loadSource() {
