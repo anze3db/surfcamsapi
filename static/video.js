@@ -1,3 +1,15 @@
+function debounce(cb, delay = 250) {
+    let timeout
+
+    return (...args) => {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => {
+            cb(...args)
+        }, delay)
+    }
+}
+
+
 class Video {
     constructor(url, backUrl) {
         this.url = url;
@@ -5,7 +17,7 @@ class Video {
         this.video = document.getElementById('video');
         this.error = document.getElementById('error');
     }
-    setSize() {
+    setSize(ev) {
         if (!this.video.videoHeight || !this.video.videoWidth) {
             // When video is loading we don't know the widht and height so just set width
             this.video.setAttribute('width', window.innerWidth);
@@ -24,14 +36,11 @@ class Video {
         this.video.setAttribute('height', height);
     }
     addListeners() {
-        window.addEventListener('resize', this.setSize);
+        window.addEventListener('resize', debounce(() => { this.setSize() }, 100));
         this.video.addEventListener('play', () => {
             this.setSize();
             this.video.removeAttribute('controls');
 
-        });
-        screen.addEventListener("orientationchange", () => {
-            this.setSize();
         });
 
         this.video.addEventListener('click', () => {
