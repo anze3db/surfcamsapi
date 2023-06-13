@@ -38,6 +38,23 @@ class Cam(models.Model):
     def detail_url(self):
         return f"{settings.HOST}{reverse('cam_detail', args=[self.id])}"
 
+    async def related_cams(self):
+        categories = [
+            cat
+            async for cat in self.categories.all()
+            .prefetch_related(
+                models.Prefetch(
+                    "cam_set", queryset=Cam.objects.order_by("categorycam__order")
+                )
+            )
+            .order_by("order")
+        ]
+        cams = []
+        for cat in list(categories):
+            for cam in cat.cam_set.all():
+                cams.append(cam)
+        return cams
+
 
 class CategoryCam(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
