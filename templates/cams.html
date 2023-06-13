@@ -5,10 +5,11 @@
         <h1>Surfcams</h1>
         {% for category in categories %}
             <h3 style="color: {{ category.color }}">{{ category.title }}</h3>
-            <ul style="column-width: 235px;">
+            <ul style="column-width: 235px; padding: 0;">
                 {% for cam in category.cam_set.all %}
-                    <li>
-                        <a href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a> - {{ cam.subtitle }}
+                    <li style="list-style: none;">
+                        <a style="color: {{ cam.title_color }}"
+                           href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a> <small style="color: {{ subtitle_color }}">{{ cam.subtitle }}</small>
                     </li>
                 {% endfor %}
             </ul>
