@@ -17,7 +17,7 @@ class Video {
         this.video = document.getElementById('video');
         this.error = document.getElementById('error');
     }
-    setSize(ev) {
+    setSize() {
         if (!this.video.videoHeight || !this.video.videoWidth) {
             // When video is loading we don't know the widht and height so just set width
             this.video.setAttribute('width', window.innerWidth);
@@ -26,12 +26,10 @@ class Video {
         const ratio = this.video.videoWidth / this.video.videoHeight;
         let width = window.innerWidth;
         let height = width / ratio;
-        console.log("size", ratio, width, height, window.innerHeight, window.innerWidth);
         if (height > window.innerHeight) {
             height = window.innerHeight;
             width = height * ratio;
         }
-        console.log("size", ratio, width, height);
         this.video.setAttribute('width', width);
         this.video.setAttribute('height', height);
     }
@@ -44,7 +42,9 @@ class Video {
         });
 
         this.video.addEventListener('click', () => {
-            window.location = this.backUrl;
+            if (!his.video.hasAttribute('controls')) {
+                window.location = this.backUrl;
+            }
         })
     }
     loadSource() {
