@@ -11,6 +11,16 @@
            controlsList="nofullscreen nodownload noremoteplayback"
            controls>
     </video>
+    <div id="error"
+         style="position:fixed;
+                display: none;
+                top: 10px;
+                right:10px;
+                border: 2px solid red;
+                background-color: var(--background-color);
+                color: var(--color);
+                padding: 10px;
+                border-radius: 10px"></div>
     <main class="container">
         <h1>{{ cam.title }}</h1>
         <ul style="column-width: 235px; padding: 0;">
