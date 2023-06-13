@@ -11,15 +11,10 @@ class Video {
             this.video.setAttribute('width', window.innerWidth);
             return;
         }
-        Object.keys(this.video).forEach(key => {
-            if (/^on/.test(key)) {
-                console.log(key);
-            }
-        });
-
         const ratio = this.video.videoWidth / this.video.videoHeight;
         let width = window.innerWidth;
         let height = width / ratio;
+        console.log("size", ratio, width, height, window.innerHeight, window.innerWidth);
         if (height > window.innerHeight) {
             height = window.innerHeight;
             width = height * ratio;
