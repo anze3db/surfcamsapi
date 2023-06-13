@@ -30,6 +30,9 @@ class Video {
             this.video.removeAttribute('controls');
 
         });
+        screen.addEventListener("orientationchange", () => {
+            this.setSize();
+        });
 
         this.video.addEventListener('click', () => {
             window.location = this.backUrl;
