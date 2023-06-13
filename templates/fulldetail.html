@@ -8,6 +8,7 @@
            muted
            autoplay
            playsinline
+           controlsList="nofullscreen nodownload noremoteplayback"
            controls>
     </video>
     <main class="container">
@@ -103,7 +104,7 @@
         <script src="{% static 'video.js' %}"></script>
         <script>
             (function () {
-                const video = new Video('{{ cam.url }}').play();
+                const video = new Video('{{ cam.url }}', '{% url "cams" %}').play();
             })();
         </script>
     {% endblock content %}
