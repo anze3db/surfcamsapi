@@ -70,6 +70,9 @@ async def cams(request):
 
 
 urlpatterns = [
+    path("", cams, name="cams_index"),
+    path("cams/<int:cam_id>/", get_full_detail, name="cam_full_detail_index"),
+    path("surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail_index"),
     path("admin/", admin.site.urls),
     path("api/index", cams, name="cams"),
     path("api/surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail"),
