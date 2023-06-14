@@ -1,15 +1,3 @@
-function debounce(cb, delay = 250) {
-    let timeout
-
-    return (...args) => {
-        clearTimeout(timeout)
-        timeout = setTimeout(() => {
-            cb(...args)
-        }, delay)
-    }
-}
-
-
 class Video {
     constructor(url, backUrl) {
         this.url = url;
@@ -19,8 +7,6 @@ class Video {
     }
     setSize() {
         if (!this.video.videoHeight || !this.video.videoWidth) {
-            // When video is loading we don't know the widht and height so just set width
-            this.video.setAttribute('width', window.innerWidth);
             return;
         }
         const ratio = this.video.videoWidth / this.video.videoHeight;
@@ -28,13 +14,11 @@ class Video {
         let height = width / ratio;
         if (height > window.innerHeight) {
             height = window.innerHeight;
-            width = height * ratio;
         }
-        this.video.setAttribute('width', width);
         this.video.setAttribute('height', height);
     }
     addListeners() {
-        window.addEventListener('resize', debounce(() => { this.setSize() }, 100));
+        window.addEventListener('resize', (() => { this.setSize() }));
         this.video.addEventListener('play', () => {
             this.setSize();
             this.video.removeAttribute('controls');
@@ -45,7 +29,7 @@ class Video {
             if (!his.video.hasAttribute('controls')) {
                 window.location = this.backUrl;
             }
-        })
+        });
     }
     loadSource() {
         if (Hls.isSupported()) {
