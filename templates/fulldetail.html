@@ -20,12 +20,32 @@
                 padding: 10px;
                 border-radius: 10px"></div>
     <main class="container">
-        <h1>{{ cam.title }}</h1>
-        <ul style="column-width: 235px; padding: 0;">
+        <h1>
+            <img src="{% static cam.image_name %}"
+                 alt="{{ cam.subtitle }}"
+                 style="font-size: inherit;
+                        vertical-align: middle;
+                        -o-object-fit: contain;
+                        object-fit: contain;
+                        margin: -.2ex 0.15em .2ex;
+                        width: 32px;
+                        height: 32px" />
+            {{ cam.title }}
+        </h1>
+        <ul style="column-width: 180px; padding: 0;">
             {% for related_cam in related_cams %}
                 <li style="list-style: none;">
+                    <img src="{% static related_cam.image_name %}"
+                         alt="{{ related_cam.subtitle }}"
+                         style="font-size: inherit;
+                                vertical-align: middle;
+                                -o-object-fit: contain;
+                                object-fit: contain;
+                                margin: -.2ex 0.15em .2ex;
+                                width: 16px;
+                                height: 16px" />
                     <a style="color: {{ related_cam.title_color }}"
-                       href="{% url 'cam_full_detail' related_cam.id %}">{{ related_cam.title }}</a> <small style="color: {{ subtitle_color }}">{{ related_cam.subtitle }}</small>
+                       href="{% url 'cam_full_detail' related_cam.id %}">{{ related_cam.title }}</a>
                 </li>
             {% endfor %}
         </ul>

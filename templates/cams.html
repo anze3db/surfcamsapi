@@ -5,11 +5,20 @@
         <h1>Surfcams</h1>
         {% for category in categories %}
             <h3 style="color: {{ category.color }}">{{ category.title }}</h3>
-            <ul style="column-width: 235px; padding: 0;">
+            <ul style="column-width: 180px; padding: 0;">
                 {% for cam in category.cam_set.all %}
                     <li style="list-style: none;">
+                        <img src="{% static cam.image_name %}"
+                             alt="{{ cam.subtitle }}"
+                             style="font-size: inherit;
+                                    vertical-align: middle;
+                                    -o-object-fit: contain;
+                                    object-fit: contain;
+                                    margin: -.2ex 0.15em .2ex;
+                                    width: 16px;
+                                    height: 16px" />
                         <a style="color: {{ cam.title_color }}"
-                           href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a> <small style="color: {{ subtitle_color }}">{{ cam.subtitle }}</small>
+                           href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a>
                     </li>
                 {% endfor %}
             </ul>

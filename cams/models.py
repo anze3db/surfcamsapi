@@ -38,6 +38,15 @@ class Cam(models.Model):
     def detail_url(self):
         return f"{settings.HOST}{reverse('cam_detail', args=[self.id])}"
 
+    def image_name(self):
+        match self.subtitle:
+            case "Beachcam":
+                return "beachcam.jpeg"
+            case "Surfline":
+                return "surfline.webp"
+            case _:
+                return "unknown.png"
+
     async def related_cams(self):
         categories = [
             cat
