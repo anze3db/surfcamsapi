@@ -14,7 +14,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-import httpx
 from django.contrib import admin
 from django.db.models import Prefetch
 from django.shortcuts import render
@@ -22,25 +21,7 @@ from django.urls import path
 
 from api.urls import api
 from cams.models import Cam, Category
-from surfline.urls import SurflineFetcher, get_surfline_data
-
-
-async def get_detail(request, cam_id: int):
-    cam = await Cam.objects.aget(id=cam_id)
-    async with httpx.AsyncClient() as client:
-        fetcher = SurflineFetcher(cam.spot_id, client)
-        tides, sunlight, wind, waves = await fetcher.fetch_all()
-
-    return render(
-        request,
-        "detail.html",
-        {
-            "cam": cam,
-            "tides": tides,
-            "sunlight": sunlight,
-            "wind_and_waves": zip(wind, waves),
-        },
-    )
+from surfline.urls import get_surfline_data
 
 
 async def get_full_detail(request, cam_id: int):
@@ -70,13 +51,9 @@ async def cams(request):
 
 
 urlpatterns = [
-    path("", cams, name="cams_index"),
-    path("cams/<int:cam_id>/", get_full_detail, name="cam_full_detail_index"),
-    path("surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail_index"),
+    path("", cams, name="cams"),
+    path("cams/<int:cam_id>/", get_full_detail, name="cam_full_detail"),
+    path("surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail"),
     path("admin/", admin.site.urls),
-    path("api/index", cams, name="cams"),
-    path("api/surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail"),
-    path("api/cams/<int:cam_id>/full", get_full_detail, name="cam_full_detail"),
-    path("api/cams/<int:cam_id>/", get_detail, name="cam_detail"),
     path("api/", api.urls),
 ]

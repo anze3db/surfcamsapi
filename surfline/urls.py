@@ -7,6 +7,25 @@ from django.shortcuts import render
 from cams.models import Cam
 
 
+async def get_surfline_data(request, cam_id: int):
+    cam = await Cam.objects.aget(id=cam_id)
+    async with httpx.AsyncClient() as client:
+        fetcher = SurflineFetcher(cam.spot_id, client)
+        try:
+            tides, sunlight, wind, waves = await fetcher.fetch_all()
+        except httpx.HTTPError:
+            return render(request, "surfline-error.html", {"cam": cam})
+    return render(
+        request,
+        "surfline.html",
+        {
+            "tides": tides,
+            "sunlight": sunlight,
+            "wind_and_waves": zip(wind, waves),
+        },
+    )
+
+
 class SurflineFetcher:
     def __init__(self, spot_id: str, client):
         self.base_url = "https://services.surfline.com/kbyg/spots/forecasts/"
@@ -173,22 +192,3 @@ class SurflineFetcher:
             self.fetch_wind(),
             self.fetch_waves(),
         )
-
-
-async def get_surfline_data(request, cam_id: int):
-    cam = await Cam.objects.aget(id=cam_id)
-    async with httpx.AsyncClient() as client:
-        fetcher = SurflineFetcher(cam.spot_id, client)
-        try:
-            tides, sunlight, wind, waves = await fetcher.fetch_all()
-        except httpx.HTTPError:
-            return render(request, "surfline-error.html", {"cam": cam})
-    return render(
-        request,
-        "surfline.html",
-        {
-            "tides": tides,
-            "sunlight": sunlight,
-            "wind_and_waves": zip(wind, waves),
-        },
-    )

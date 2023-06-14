@@ -1,8 +1,11 @@
+import httpx
 from django.conf import settings
 from django.db.models import Prefetch
+from django.shortcuts import render
 from ninja import Field, NinjaAPI, Schema
 
 from cams.models import Cam, Category
+from surfline.urls import SurflineFetcher
 
 api = NinjaAPI()
 
@@ -58,3 +61,22 @@ async def cams(request):
 async def health(request):
     assert await Category.objects.acount() > 0, "Not enough categories"
     return {"message": "ok"}
+
+
+@api.get("/cams/{cam_id}")
+async def get_detail(request, cam_id: int):
+    cam = await Cam.objects.aget(id=cam_id)
+    async with httpx.AsyncClient() as client:
+        fetcher = SurflineFetcher(cam.spot_id, client)
+        tides, sunlight, wind, waves = await fetcher.fetch_all()
+
+    return render(
+        request,
+        "detail.html",
+        {
+            "cam": cam,
+            "tides": tides,
+            "sunlight": sunlight,
+            "wind_and_waves": zip(wind, waves),
+        },
+    )
