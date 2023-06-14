@@ -94,6 +94,32 @@ class SurflineFetcher:
             if date.hour < prev_hour:
                 res.append({"date": date, "break": True})
             prev_hour = date.hour
+            direction_type = d["directionType"]
+            speed = d["speed"] * 1.852  # kts to kph
+            color = "black"
+
+            class Colors:
+                red = "#E44D3A"
+                green = "#55AB68"
+                orange = "#D8833B"
+
+            match (direction_type, speed):
+                case ("Onshore", _) if speed < 10:
+                    color = Colors.green
+                case ("Onshore", _) if speed < 20:
+                    color = Colors.orange
+                case ("Onshore", _):
+                    color = Colors.red
+                case ("Cross-shore", _) if speed < 20:
+                    color = Colors.green
+                case ("Cross-shore", _) if speed < 30:
+                    color = Colors.orange
+                case ("Cross-shore", _):
+                    color = Colors.red
+                case ("Offshore", _) if speed < 30:
+                    color = Colors.green
+                case ("Offshore", _):
+                    color = Colors.orange
             res.append(
                 {
                     "date": date,
@@ -102,6 +128,7 @@ class SurflineFetcher:
                     "speed": d["speed"] * 1.852,  # kts to kph
                     "gust": d["gust"] * 1.852,  # kts to kph
                     "score": d["optimalScore"],
+                    "color": color,
                 }
             )
         return res

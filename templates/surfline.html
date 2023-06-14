@@ -66,17 +66,16 @@
                         </div>
                     </td>
                     <td style="padding: 10px 8px;
-                               background-color: #55AB68;
+                               background-color: {{ wind.color }};
                                color: white;
                                text-align: center;
                                line-height: 12px">
                         <div style="transform: rotate(calc({{ wind.direction | floatformat:"0" }}deg - 270deg))">➤</div>
-                        <span style="font-size: 10px">{{ wind.direction_type | title }}
-                            </style>
-                        </td>
-                        <!-- D8833B -->
-                    {% endif %}
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
+                        <span style="font-size: 10px">{{ wind.direction_type | title }}</span>
+                    </td>
+                    <!-- D8833B -->
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+</div>
