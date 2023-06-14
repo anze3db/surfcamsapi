@@ -99,8 +99,8 @@ class SurflineFetcher:
                     "date": date,
                     "direction": d["direction"],
                     "direction_type": d["directionType"],
-                    "speed": d["speed"],
-                    "gust": d["gust"],
+                    "speed": d["speed"] * 1.852,  # kts to kph
+                    "gust": d["gust"] * 1.852,  # kts to kph
                     "score": d["optimalScore"],
                 }
             )
