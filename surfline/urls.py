@@ -122,6 +122,7 @@ class SurflineFetcher:
             if date.hour < prev_hour:
                 res.append({"date": date, "break": True})
             prev_hour = date.hour
+            swells = sorted(d["swells"], key=lambda x: x["impact"], reverse=True)
             res.append(
                 {
                     "date": date,
@@ -129,9 +130,9 @@ class SurflineFetcher:
                     "max": d["surf"]["max"],
                     "human": d["surf"]["humanRelation"],
                     "score": d["surf"]["optimalScore"],
-                    "primary_swell_size": d["swells"][0]["height"],
-                    "primary_swell_period": d["swells"][0]["period"],
-                    "primary_swell_direction": d["swells"][0]["direction"],
+                    "primary_swell_size": swells[0]["height"],
+                    "primary_swell_period": swells[0]["period"],
+                    "primary_swell_direction": swells[0]["direction"],
                 }
             )
         return res
