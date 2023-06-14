@@ -1,3 +1,13 @@
+function debounce(cb, delay = 250) {
+    let timeout
+    return (...args) => {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => {
+            cb(...args)
+        }, delay)
+    }
+}
+
 class Video {
     constructor(url, backUrl) {
         this.url = url;
@@ -18,7 +28,9 @@ class Video {
         this.video.setAttribute('height', height);
     }
     addListeners() {
-        window.addEventListener('resize', (() => { this.setSize() }));
+        window.addEventListener('resize', (debounce((ev) => {
+            this.setSize();
+        }, 20)));
         this.video.addEventListener('play', () => {
             this.setSize();
             this.video.removeAttribute('controls');
@@ -26,7 +38,7 @@ class Video {
         });
 
         this.video.addEventListener('click', () => {
-            if (!his.video.hasAttribute('controls')) {
+            if (!this.video.hasAttribute('controls')) {
                 window.location = this.backUrl;
             }
         });
