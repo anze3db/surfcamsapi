@@ -106,13 +106,13 @@ class SurflineFetcher:
             match (direction_type, speed):
                 case ("Onshore", _) if speed < 10:
                     color = Colors.green
-                case ("Onshore", _) if speed < 20:
+                case ("Onshore", _) if speed < 30:
                     color = Colors.orange
                 case ("Onshore", _):
                     color = Colors.red
                 case ("Cross-shore", _) if speed < 20:
                     color = Colors.green
-                case ("Cross-shore", _) if speed < 30:
+                case ("Cross-shore", _) if speed < 40:
                     color = Colors.orange
                 case ("Cross-shore", _):
                     color = Colors.red
