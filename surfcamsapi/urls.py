@@ -55,5 +55,7 @@ urlpatterns = [
     path("cams/<int:cam_id>/", get_full_detail, name="cam_full_detail"),
     path("surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail"),
     path("admin/", admin.site.urls),
+    path("api/index", cams), # TODO: remove soon
+    path("api/cams/<int:cam_id>/full", get_full_detail), # TODO: remove soon
     path("api/", api.urls),
 ]
