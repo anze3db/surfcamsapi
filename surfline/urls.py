@@ -122,22 +122,22 @@ class SurflineFetcher:
                 green = "#55AB68"
                 orange = "#D8833B"
 
-            match (direction_type, speed):
-                case ("Onshore", _) if speed < 10:
+            match direction_type:
+                case "Onshore" if speed < 10:
                     color = Colors.green
-                case ("Onshore", _) if speed < 30:
+                case "Onshore" if speed < 30:
                     color = Colors.orange
-                case ("Onshore", _):
+                case "Onshore":
                     color = Colors.red
-                case ("Cross-shore", _) if speed < 20:
+                case "Cross-shore" if speed < 20:
                     color = Colors.green
-                case ("Cross-shore", _) if speed < 40:
+                case "Cross-shore" if speed < 40:
                     color = Colors.orange
-                case ("Cross-shore", _):
+                case "Cross-shore":
                     color = Colors.red
-                case ("Offshore", _) if speed < 30:
+                case "Offshore" if speed < 30:
                     color = Colors.green
-                case ("Offshore", _):
+                case "Offshore":
                     color = Colors.orange
             res.append(
                 {
