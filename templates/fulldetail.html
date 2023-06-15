@@ -32,9 +32,9 @@
                         height: 32px" />
             {{ cam.title }}
         </h1>
-        <ul style="column-width: 180px; padding: 0;">
+        <ul>
             {% for related_cam in related_cams %}
-                <li style="list-style: none;">
+                <li style="list-style: none; display: inline;">
                     <img src="{% static related_cam.image_name %}"
                          alt="{{ related_cam.subtitle }}"
                          style="font-size: inherit;
