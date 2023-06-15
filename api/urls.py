@@ -64,7 +64,7 @@ async def health(request):
 
 
 @api.get("/cams/{cam_id}")
-async def get_detail(request, cam_id: int):
+async def cams_detail(request, cam_id: int):
     cam = await Cam.objects.aget(id=cam_id)
     async with httpx.AsyncClient() as client:
         fetcher = SurflineFetcher(cam.spot_id, client)

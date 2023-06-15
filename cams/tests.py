@@ -45,11 +45,11 @@ class TestCamsApi(TestCase):
                     "cams": [
                         {
                             "title": "Cam 1",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam1.id}/",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam1.id}",
                         },
                         {
                             "title": "Cam 3",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}/",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}",
                         },
                     ],
                 },
@@ -59,11 +59,11 @@ class TestCamsApi(TestCase):
                     "cams": [
                         {
                             "title": "Cam 2",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam2.id}/",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam2.id}",
                         },
                         {
                             "title": "Cam 3",
-                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}/",
+                            "detailUrl": f"http://localhost:8000/api/cams/{self.cam3.id}",
                         },
                     ],
                 },
