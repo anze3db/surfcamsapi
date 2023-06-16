@@ -20,7 +20,7 @@
                 padding: 10px;
                 border-radius: 10px"></div>
     <main class="container">
-        <h1>
+        <h2 style="margin-bottom: 20px;">
             <img src="{% static cam.image_name %}"
                  alt="{{ cam.subtitle }}"
                  style="font-size: inherit;
@@ -31,7 +31,7 @@
                         width: 32px;
                         height: 32px" />
             {{ cam.title }}
-        </h1>
+        </h2>
         <ul style=" overflow-x:scroll; white-space: nowrap; line-height: 60px;">
             {% for related_cam in related_cams %}
                 <li style="list-style: none; display: inline;">
