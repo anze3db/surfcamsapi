@@ -32,11 +32,12 @@
                         height: 32px" />
             {{ cam.title }}
         </h1>
-        <ul style=" overflow-x:scroll; white-space: nowrap;">
+        <ul style=" overflow-x:scroll; white-space: nowrap; line-height: 60px;">
             {% for related_cam in related_cams %}
                 <li style="list-style: none; display: inline;">
                     <span style="color: {{ cam.bullet_color }}">•</span>
-                    <a style="color: {{ related_cam.title_color }}"
+                    <a style="color: {{ related_cam.title_color }};
+                              margin: 20px 0px"
                        href="{% url 'cam_full_detail' related_cam.id %}">{{ related_cam.title }}</a>
                 </li>
             {% endfor %}
