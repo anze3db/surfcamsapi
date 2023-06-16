@@ -47,6 +47,15 @@ class Cam(models.Model):
             case _:
                 return "unknown.png"
 
+    def bullet_color(self):
+        match self.subtitle:
+            case "Beachcam":
+                return "yellow"
+            case "Surfline":
+                return "#15a0eb"
+            case _:
+                return "gray"
+
     async def related_cams(self):
         categories = [
             cat

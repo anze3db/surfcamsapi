@@ -8,15 +8,7 @@
             <ul style="column-width: 180px; padding: 0;">
                 {% for cam in category.cam_set.all %}
                     <li style="list-style: none;">
-                        <img src="{% static cam.image_name %}"
-                             alt="{{ cam.subtitle }}"
-                             style="font-size: inherit;
-                                    vertical-align: middle;
-                                    -o-object-fit: contain;
-                                    object-fit: contain;
-                                    margin: -.2ex 0.15em .2ex;
-                                    width: 16px;
-                                    height: 16px" />
+                        <span style="color: {{ cam.bullet_color }}">•</span>
                         <a style="color: {{ cam.title_color }}"
                            href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a>
                     </li>

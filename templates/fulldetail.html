@@ -32,18 +32,10 @@
                         height: 32px" />
             {{ cam.title }}
         </h1>
-        <ul>
+        <ul style=" overflow:scroll; white-space: nowrap;">
             {% for related_cam in related_cams %}
                 <li style="list-style: none; display: inline;">
-                    <img src="{% static related_cam.image_name %}"
-                         alt="{{ related_cam.subtitle }}"
-                         style="font-size: inherit;
-                                vertical-align: middle;
-                                -o-object-fit: contain;
-                                object-fit: contain;
-                                margin: -.2ex 0.15em .2ex;
-                                width: 16px;
-                                height: 16px" />
+                    <span style="color: {{ cam.bullet_color }}">•</span>
                     <a style="color: {{ related_cam.title_color }}"
                        href="{% url 'cam_full_detail' related_cam.id %}">{{ related_cam.title }}</a>
                 </li>
