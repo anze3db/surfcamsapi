@@ -46,14 +46,15 @@ class CamsSchema(Schema):
 
 
 @api.get("/cams.json", response=CamsSchema)
-async def cams(request):
+async def cams(request, ana: bool = False):
     categories = [
         cat
         async for cat in Category.objects.all().prefetch_related(
             Prefetch("cam_set", queryset=Cam.objects.order_by("categorycam__order"))
         )
     ]
-
+    if not ana:
+        return {"categories": [c for c in categories if c.title != "For Ana ❤️"]}
     return {"categories": list(categories)}
 
 
