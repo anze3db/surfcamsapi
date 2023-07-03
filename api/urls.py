@@ -53,8 +53,6 @@ async def cams(request, ana: bool = False):
             Prefetch("cam_set", queryset=Cam.objects.order_by("categorycam__order"))
         )
     ]
-    if not ana:
-        return {"categories": [c for c in categories if c.title != "For Ana ❤️"]}
     return {"categories": list(categories)}
 
 

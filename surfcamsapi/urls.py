@@ -47,8 +47,6 @@ async def cams(request):
         )
         .order_by("order")
     ]
-    if not request.GET.get("ana"):
-        categories = [c for c in categories if c.title != "For Ana ❤️"]
     return render(request, "cams.html", {"categories": list(categories)})
 
 
