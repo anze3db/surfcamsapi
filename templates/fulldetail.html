@@ -52,7 +52,7 @@
     <script src="{% static 'video.js' %}"></script>
     <script>
             (function () {
-                const video = new Video('{{ cam.url }}', '{% url "cams" %}').play();
+                const video = new Video('{{ cam.url }}', 'javascript:history.back()').play();
             })();
     </script>
 {% endblock content %}
