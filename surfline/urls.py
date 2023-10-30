@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 
 import httpx
+import stamina
 from django.shortcuts import render
 
 from cams.models import Cam
@@ -34,12 +35,15 @@ class SurflineFetcher:
         self.day_params = {"spotId": spot_id, "days": 3}
         self.spot_id = spot_id
 
+    @stamina.retry(on=httpx.HTTPError, attempts=3)
     async def fetch_tides(self):
         tide_response = await self.client.get(
             self.base_url + "tides",
             timeout=5.0,
             params=self.params,
         )
+        if tide_response.status_code != 200:
+            raise httpx.HTTPError("Non-200 response")
         res = []
         for tide in tide_response.json()["data"]["tides"]:
             if tide["type"] == "NORMAL":
@@ -62,12 +66,15 @@ class SurflineFetcher:
             )
         return res
 
+    @stamina.retry(on=httpx.HTTPError, attempts=3)
     async def fetch_sunlight(self):
         sunlight_response = await self.client.get(
             self.base_url + "sunlight",
             timeout=5.0,
             params=self.params,
         )
+        if sunlight_response.status_code != 200:
+            raise httpx.HTTPError("Non-200 response")
 
         for sun in sunlight_response.json()["data"]["sunlight"]:
             return [
@@ -97,12 +104,15 @@ class SurflineFetcher:
                 },
             ]
 
+    @stamina.retry(on=httpx.HTTPError, attempts=3)
     async def fetch_wind(self):
         wind_response = await self.client.get(
             self.base_url + "wind",
             timeout=5.0,
             params=self.day_params,
         )
+        if wind_response.status_code != 200:
+            raise httpx.HTTPError("Non-200 response")
         res = []
         data = wind_response.json()["data"]["wind"]
         prev_hour = 24
@@ -152,12 +162,15 @@ class SurflineFetcher:
             )
         return res
 
+    @stamina.retry(on=httpx.HTTPError, attempts=3)
     async def fetch_waves(self):
         wave_response = await self.client.get(
             self.base_url + "wave",
             timeout=5.0,
             params=self.day_params,
         )
+        if wave_response.status_code != 200:
+            raise httpx.HTTPError("Non-200 response")
         res = []
         data = wave_response.json()["data"]["wave"]
         prev_hour = 24

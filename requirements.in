@@ -2,8 +2,10 @@ django
 django-admin-sortable2
 django-environ
 django-ninja
+django-tui
 httpx
 sentry-sdk
+stamina
 uvicorn
 whitenoise
 # Dev requirements
