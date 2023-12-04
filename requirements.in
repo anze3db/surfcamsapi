@@ -9,8 +9,8 @@ stamina
 uvicorn
 whitenoise
 # Dev requirements
-black
 djlint
+flakytest
 ruff
 pytest
 pytest-django
