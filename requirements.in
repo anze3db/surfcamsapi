@@ -3,6 +3,7 @@ django-admin-sortable2
 django-environ
 django-ninja
 django-tui
+gunicorn
 httpx
 sentry-sdk
 stamina
