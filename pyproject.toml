@@ -1,3 +1,32 @@
+[project]
+name = "surfcamsapi"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django",
+    "django-admin-sortable2",
+    "django-environ",
+    "django-ninja",
+    "django-tui",
+    "gunicorn",
+    "httpx",
+    "sentry-sdk",
+    "stamina",
+    "uvicorn",
+    "whitenoise",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "djlint",
+    "flakytest",
+    "ruff",
+    "pytest",
+    "pytest-django",
+]
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "--verbose --reuse-db --durations=3"
