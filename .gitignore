@@ -4,3 +4,6 @@ db.sqlite3
 .env
 staticroot
 surfcamsapi.sqlite
+
+gunicorn.pid
+update.log
