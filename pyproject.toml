@@ -12,6 +12,7 @@ dependencies = [
     "django-tui",
     "gunicorn",
     "httpx",
+    "model-bakery>=1.20.0",
     "sentry-sdk",
     "stamina",
     "uvicorn",

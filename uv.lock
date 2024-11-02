@@ -336,6 +336,18 @@ wheels = [
 ]
 
 [[package]]
+name = "model-bakery"
+version = "1.20.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/31/2d/9f61b529c788b367a6bac5b211bf8879036b4bcb27a5e9e78808131ea6fb/model_bakery-1.20.0.tar.gz", hash = "sha256:ec9dc846b9a00b20f92df38fac310263323ab61b59b6eeebf77a4aefb0412724", size = 21016 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/60/f0/c6a6c8ac6fd1dd3c0241ac69230af6592e573d3dedc2ff95b22a352c10f2/model_bakery-1.20.0-py3-none-any.whl", hash = "sha256:875326466f5982ee8f0281abdfa774d78893d5473562575dfd5a9304ac7c5b8c", size = 24019 },
+]
+
+[[package]]
 name = "packaging"
 version = "24.1"
 source = { registry = "https://pypi.org/simple" }
@@ -604,13 +616,14 @@ dependencies = [
     { name = "django-tui" },
     { name = "gunicorn" },
     { name = "httpx" },
+    { name = "model-bakery" },
     { name = "sentry-sdk" },
     { name = "stamina" },
     { name = "uvicorn" },
     { name = "whitenoise" },
 ]
 
-[package.dev-dependencies]
+[package.dependency-groups]
 dev = [
     { name = "djlint" },
     { name = "flakytest" },
@@ -628,13 +641,14 @@ requires-dist = [
     { name = "django-tui" },
     { name = "gunicorn" },
     { name = "httpx" },
+    { name = "model-bakery", specifier = ">=1.20.0" },
     { name = "sentry-sdk" },
     { name = "stamina" },
     { name = "uvicorn" },
     { name = "whitenoise" },
 ]
 
-[package.metadata.requires-dev]
+[package.metadata.dependency-groups]
 dev = [
     { name = "djlint" },
     { name = "flakytest" },

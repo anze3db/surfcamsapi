@@ -1,4 +1,5 @@
 from django.test import TestCase, override_settings
+from model_bakery import baker
 
 from cams.models import Cam, Category, CategoryCam
 
@@ -8,14 +9,14 @@ class TestCamsApi(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.cat1 = cat1 = Category.objects.create(title="Cat 1", color="#000000")
-        cls.cat2 = cat2 = Category.objects.create(title="Cat 2", color="#000000")
-        cls.cat3 = Category.objects.create(title="Cat 3", color="#000000")
+        cls.cat1 = cat1 = baker.make(Category, title="Cat 1", color="#000000")
+        cls.cat2 = cat2 = baker.make(Category, title="Cat 2", color="#000000")
+        cls.cat3 = baker.make(Category, title="Cat 3", color="#000000")
 
-        cls.cam1 = cam1 = Cam.objects.create(title="Cam 1")
-        cls.cam2 = cam2 = Cam.objects.create(title="Cam 2")
-        cls.cam3 = cam3 = Cam.objects.create(title="Cam 3")
-        cam4 = Cam.objects.create(title="Cam 4")
+        cls.cam1 = cam1 = baker.make(Cam, title="Cam 1")
+        cls.cam2 = cam2 = baker.make(Cam, title="Cam 2")
+        cls.cam3 = cam3 = baker.make(Cam, title="Cam 3")
+        baker.make(Cam)
 
         cam1.categories.add(cat1)
         cam2.categories.add(cat2)

@@ -26,9 +26,9 @@ class Cam(models.Model):
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100)
     url = models.CharField(max_length=4000)
-    title_color = models.CharField(max_length=7)
-    subtitle_color = models.CharField(max_length=7)
-    background_color = models.CharField(max_length=7)
+    title_color = models.CharField(max_length=7, default="#ffffff")
+    subtitle_color = models.CharField(max_length=7, default="#ffffff")
+    background_color = models.CharField(max_length=7, default="#000000")
 
     categories = models.ManyToManyField(Category, through="CategoryCam")
     spot_id = models.CharField(max_length=100, blank=True, null=True)
