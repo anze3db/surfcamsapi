@@ -10,7 +10,7 @@
                     <li style="list-style: none;">
                         <span style="color: {{ cam.bullet_color }}">•</span>
                         <a style="color: {{ cam.title_color }}"
-                           href="{% url 'cam_full_detail' cam.id %}">{{ cam.title }}</a>
+                           href="{% url 'cam_full_detail' cam.slug %}">{{ cam.title }}</a>
                     </li>
                 {% endfor %}
             </ul>

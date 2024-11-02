@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.db.models import Prefetch
 from django.shortcuts import render
@@ -24,8 +25,14 @@ from cams.models import Cam, Category
 from surfline.urls import get_surfline_data
 
 
-async def get_full_detail(request, cam_id: int):
-    cam = await Cam.objects.aget(id=cam_id)
+async def get_full_detail(request, cam_id: str):
+    try:
+        cam = await Cam.objects.aget(slug=cam_id)
+    except Cam.DoesNotExist:
+        if cam_id.isdigit():
+            cam = await Cam.objects.aget(id=cam_id)
+        else:
+            raise
     related_cams = await cam.related_cams()
 
     return render(
@@ -52,7 +59,7 @@ async def cams(request):
 
 urlpatterns = [
     path("", cams, name="cams"),
-    path("cams/<int:cam_id>/", get_full_detail, name="cam_full_detail"),
+    path("cams/<str:cam_id>/", get_full_detail, name="cam_full_detail"),
     path("surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail"),
     path("admin/", admin.site.urls),
     path("api/index", cams),  # TODO: remove soon
