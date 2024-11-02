@@ -22,6 +22,7 @@ class Category(models.Model):
 
 
 class Cam(models.Model):
+    slug = models.SlugField(max_length=100, unique=True)
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100)
     url = models.CharField(max_length=4000)
