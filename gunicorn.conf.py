@@ -3,4 +3,4 @@ workers = 1
 threads = 4
 proc_name = "surfcams"
 worker_class = "uvicorn.workers.UvicornWorker"
-pidfile = "gunicorn.pid"
+pidfile = "/var/run/gunicorn-surfcams.pid"

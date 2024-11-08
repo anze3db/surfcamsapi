@@ -6,5 +6,4 @@ surfcams.db
 staticroot
 surfcamsapi.sqlite
 
-gunicorn.pid
 update.log
