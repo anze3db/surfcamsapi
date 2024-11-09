@@ -1,6 +1,5 @@
+proc_name = "surfcams"
 bind = "unix:gunicorn.sock"
 workers = 1
 threads = 4
-proc_name = "surfcams"
 worker_class = "uvicorn.workers.UvicornWorker"
-pidfile = "/var/run/gunicorn-surfcams.pid"

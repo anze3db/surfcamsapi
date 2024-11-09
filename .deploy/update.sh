@@ -5,6 +5,6 @@ git pull
 uv sync --locked
 uv run python manage.py collectstatic --noinput
 uv run python manage.py migrate
-sudo kill -hup `cat /var/run/gunicorn-surfcams.pid`
+ps axf | grep 'gunicorn: master \[surfcams\]' | awk '{print "sudo kill -hup " $1}' | sh
 echo `date "+%Y-%m-%d %H:%M:%S.%3N"` ' Updated' >> update.log
 popd
