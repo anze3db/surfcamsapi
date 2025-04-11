@@ -15,8 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+import httpx
+from django.conf import settings
 from django.contrib import admin
 from django.db.models import Prefetch
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import path
 
@@ -57,6 +60,17 @@ async def cams(request):
     return render(request, "cams.html", {"categories": list(categories)})
 
 
+async def proxy(request, url: str):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"https://{url}",
+            headers={
+                "Referer": settings.P_REFERER,
+            },
+        )
+        return HttpResponse(response.content, content_type="application/x-mpegURL")
+
+
 urlpatterns = [
     path("", cams, name="cams"),
     path("cams/<str:cam_id>/", get_full_detail, name="cam_full_detail"),
@@ -65,4 +79,5 @@ urlpatterns = [
     path("api/index", cams),  # TODO: remove soon
     path("api/cams/<int:cam_id>/full", get_full_detail),  # TODO: remove soon
     path("api/", api.urls),
+    path("p/<path:url>", proxy, name="proxy"),
 ]

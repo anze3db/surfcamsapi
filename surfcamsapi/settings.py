@@ -157,6 +157,8 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+P_REFERER = env("P_REFERER", default="")
+
 # Sentry
 
 if SENTRY_DNS := env("SENTRY_DNS"):
