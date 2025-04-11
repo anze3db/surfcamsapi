@@ -18,16 +18,19 @@ Including another URLconf
 import httpx
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth import alogin, authenticate
+from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.http import HttpResponse
-from django.shortcuts import render
-from django.urls import path
+from django.shortcuts import redirect, render
+from django.urls import include, path
 
 from api.urls import api
 from cams.models import Cam, Category
 from surfline.urls import get_surfline_data
 
 
+@login_required
 async def get_full_detail(request, cam_id: str):
     try:
         cam = await Cam.objects.aget(slug=cam_id)
@@ -48,6 +51,7 @@ async def get_full_detail(request, cam_id: str):
     )
 
 
+@login_required
 async def cams(request):
     categories = [
         cat
@@ -60,6 +64,7 @@ async def cams(request):
     return render(request, "cams.html", {"categories": list(categories)})
 
 
+@login_required
 async def proxy(request, url: str):
     async with httpx.AsyncClient() as client:
         response = await client.get(
@@ -71,8 +76,23 @@ async def proxy(request, url: str):
         return HttpResponse(response.content, content_type="application/x-mpegURL")
 
 
+async def login_view(request):
+    if request.method == "GET":
+        return render(request, "login.html")
+    elif request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            await alogin(request, user)
+            return redirect(request.GET.get("next", "/"))
+        else:
+            return render(request, "login.html", {"error": "Invalid credentials"})
+
+
 urlpatterns = [
     path("", cams, name="cams"),
+    path("accounts/", include("django.contrib.auth.urls")),
     path("cams/<str:cam_id>/", get_full_detail, name="cam_full_detail"),
     path("surfline/<int:cam_id>/", get_surfline_data, name="surfline_detail"),
     path("admin/", admin.site.urls),

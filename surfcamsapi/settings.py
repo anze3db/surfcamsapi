@@ -159,6 +159,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 P_REFERER = env("P_REFERER", default="")
 
+DEFAULT_NEXT_PAGE = "/"
+
 # Sentry
 
 if SENTRY_DNS := env("SENTRY_DNS"):
