@@ -29,6 +29,7 @@ class Cam(models.Model):
     title_color = models.CharField(max_length=7, default="#ffffff")
     subtitle_color = models.CharField(max_length=7, default="#ffffff")
     background_color = models.CharField(max_length=7, default="#000000")
+    proxy = models.BooleanField(default=False)
 
     categories = models.ManyToManyField(Category, through="CategoryCam")
     spot_id = models.CharField(max_length=100, blank=True, null=True)
@@ -38,6 +39,13 @@ class Cam(models.Model):
 
     def detail_url(self):
         return f"{settings.HOST}{reverse('api-1.0.0:cams_detail', args=[self.id])}"
+
+    @property
+    def proxy_url(self) -> str:
+        if self.proxy:
+            return reverse("proxy", kwargs={"url": self.url.replace("https://", "")})
+        else:
+            return self.url
 
     def image_name(self):
         match self.subtitle:

@@ -52,7 +52,7 @@
     <script src="{% static 'video.js' %}"></script>
     <script>
             (function () {
-                const video = new Video('{{ cam.url }}', 'javascript:history.back()').play();
+                const video = new Video('{{ cam.proxy_url }}', 'javascript:history.back()').play();
             })();
     </script>
 {% endblock content %}
