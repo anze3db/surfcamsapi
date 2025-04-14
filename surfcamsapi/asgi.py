@@ -11,6 +11,20 @@ import os
 
 from django.core.asgi import get_asgi_application
 
+from .scheduler import start_scheduler
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "surfcamsapi.settings")
 
-application = get_asgi_application()
+# Get the ASGI application
+django_application = get_asgi_application()
+
+# Start the scheduler
+scheduler = None
+
+
+async def application(scope, receive, send):
+    global scheduler
+    if scheduler is None:
+        scheduler = await start_scheduler()
+
+    await django_application(scope, receive, send)
