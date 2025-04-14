@@ -33,14 +33,11 @@ class Video {
         }, 20)));
         this.video.addEventListener('play', () => {
             this.setSize();
-            this.video.removeAttribute('controls');
 
         });
 
         this.video.addEventListener('click', () => {
-            if (!this.video.hasAttribute('controls')) {
-                window.location = this.backUrl;
-            }
+            window.location = this.backUrl;
         });
     }
     loadSource() {
@@ -54,7 +51,6 @@ class Video {
                     this.error.style.display = 'block';
                     this.error.textContent += data.details + " ";
                 }
-                // this.video.setAttribute('controls', 'controls');
             });
         }
         else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -66,7 +62,6 @@ class Video {
 
                     this.error.textContent += data.details + " ";
                 }
-                // this.video.setAttribute('controls', 'controls');
 
             });
         }
