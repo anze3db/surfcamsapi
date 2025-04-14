@@ -30,6 +30,7 @@ class Cam(models.Model):
     subtitle_color = models.CharField(max_length=7, default="#ffffff")
     background_color = models.CharField(max_length=7, default="#000000")
     proxy = models.BooleanField(default=False)
+    offline_since = models.DateTimeField(default=None, blank=True, null=True)
 
     categories = models.ManyToManyField(Category, through="CategoryCam")
     spot_id = models.CharField(max_length=100, blank=True, null=True)
