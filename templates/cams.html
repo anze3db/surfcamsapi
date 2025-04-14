@@ -8,8 +8,8 @@
             <ul style="column-width: 180px; padding: 0;">
                 {% for cam in category.cam_set.all %}
                     <li style="list-style: none;">
-                        <span style="color: {{ cam.bullet_color }}">•</span>
-                        <a style="color: {{ cam.title_color }}"
+                        <span style="color: {% if cam.offline_since %}#888888{% else %}{{ cam.bullet_color }}{% endif %}">•</span>
+                        <a style="color: {% if cam.offline_since %}#888888{% else %}{{ cam.title_color }}{% endif %}"
                            href="{% url 'cam_full_detail' cam.slug %}">{{ cam.title }}</a>
                     </li>
                 {% endfor %}

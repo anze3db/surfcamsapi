@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% load static %}
+{% load humanize %}
 {% block content %}
     <video id="video"
            width="100%"
@@ -32,6 +33,11 @@
                         height: 32px" />
             {{ cam.title }}
         </h2>
+        {% if cam.offline_since %}
+            <div class="alert">
+                <p>⚠️ This camera has been offline since {{ cam.offline_since|naturalday }}.</p>
+            </div>
+        {% endif %}
         <ul style=" overflow-x:scroll; white-space: nowrap; line-height: 60px;">
             {% for related_cam in related_cams %}
                 <li style="list-style: none; display: inline;">
