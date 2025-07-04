@@ -59,7 +59,7 @@ async def start_scheduler():
     scheduler.add_job(
         daily_job,
         "interval",
-        hours=6,
+        hours=2,
         next_run_time=datetime.datetime.now(),
         id="daily_job",
         replace_existing=True,
