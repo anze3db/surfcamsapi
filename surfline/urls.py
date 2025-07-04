@@ -192,6 +192,7 @@ class SurflineFetcher:
                     "primary_swell_size": swells[0]["height"],
                     "primary_swell_period": swells[0]["period"],
                     "primary_swell_direction": swells[0]["direction"],
+                    "power": d["power"],
                 }
             )
         return res
