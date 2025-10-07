@@ -19,10 +19,13 @@ dependencies = [
     "uvicorn",
     "whitenoise",
     "apscheduler",
+    # Dev dependencies
+    "djlint",
+    "flakytest",
+    "ruff",
+    "pytest",
+    "pytest-django",
 ]
-
-[tool.uv]
-dev-dependencies = ["djlint", "flakytest", "ruff", "pytest", "pytest-django"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
