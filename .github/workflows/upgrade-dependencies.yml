@@ -1,0 +1,34 @@
+# This workflow will install pip-tools, run pip-compile to update all dependencies and then
+# open a PR unless everything is up to date.
+
+name: Upgrade dependencies
+
+on:
+  schedule:
+  - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        enable-cache: true
+        version: "latest"
+    - name: Upgrade dependencies
+      run: |
+        printf "### Upgraded dependencies\n\n\`\`\`\n" > update.log
+        uv lock --upgrade 2>&1 | tee -a update.log
+        printf "\`\`\`" >> update.log
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.PAT }}
+        commit-message: Upgrade dependencies
+        branch: bot/upgrade-dependencies
+        delete-branch: true
+        title: 'Upgrade dependencies'
+        body-path: update.log
