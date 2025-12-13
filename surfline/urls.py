@@ -9,7 +9,10 @@ from cams.models import Cam
 
 
 async def get_surfline_data(request, cam_id: int):
-    cam = await Cam.objects.aget(id=cam_id)
+    try:
+        cam = await Cam.objects.aget(id=cam_id)
+    except Cam.DoesNotExist:
+        return render(request, "surfline-error.html", {"message": "Cam not found"})
     async with httpx.AsyncClient() as client:
         fetcher = SurflineFetcher(cam.spot_id, client)
         try:

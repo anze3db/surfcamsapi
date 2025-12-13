@@ -1,7 +1,7 @@
 import httpx
 from django.conf import settings
 from django.db.models import Prefetch
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from ninja import Field, NinjaAPI, Schema
 
 from cams.models import Cam, Category
@@ -64,7 +64,10 @@ async def health(request):
 
 @api.get("/cams/{cam_id}")
 async def cams_detail(request, cam_id: int):
-    cam = await Cam.objects.aget(id=cam_id)
+    try:
+        cam = await Cam.objects.aget(id=cam_id)
+    except Cam.DoesNotExist:
+        return api.create_response(request, {"message": "Cam not found"}, status=404)
     async with httpx.AsyncClient() as client:
         fetcher = SurflineFetcher(cam.spot_id, client)
         tides, sunlight, wind, waves = await fetcher.fetch_all()

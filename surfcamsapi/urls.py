@@ -36,9 +36,12 @@ async def get_full_detail(request, cam_id: str):
         cam = await Cam.objects.aget(slug=cam_id)
     except Cam.DoesNotExist:
         if cam_id.isdigit():
-            cam = await Cam.objects.aget(id=cam_id)
+            try:
+                cam = await Cam.objects.aget(id=cam_id)
+            except Cam.DoesNotExist:
+                return HttpResponse("Cam not found", status=404)
         else:
-            raise
+            return HttpResponse("Cam not found", status=404)
     related_cams = await cam.related_cams()
 
     return render(
