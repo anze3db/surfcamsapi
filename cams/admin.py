@@ -14,14 +14,12 @@ class CamInline(SortableInlineAdminMixin, admin.TabularInline):
 
 
 # Register your models here.
+@admin.register(Category)
 class CategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ("title", "color", "order")
     inlines = (CamInline,)
 
 
+@admin.register(Cam)
 class CamAdmin(SortableAdminBase, admin.ModelAdmin):
     list_display = ("title", "subtitle", "url")
-
-
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Cam, CamAdmin)
