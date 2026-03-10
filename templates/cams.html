@@ -7,7 +7,13 @@
         }
     </style>
     <main class="container">
-        <h1>Surfcams</h1>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h1>Surfcams</h1>
+            <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="hide-offline" onchange="toggleOffline(this.checked)">
+                Hide offline
+            </label>
+        </div>
         {% for category in categories %}
             <h3 style="color: {{ category.color }}; margin-bottom: 0.5rem;">{{ category.title }}</h3>
             <div style="display: flex;
@@ -16,6 +22,7 @@
                         margin-bottom: 1.5rem">
                 {% for cam in category.cam_set.all %}
                     <a class="cam-chip"
+                       {% if cam.offline_since %}data-offline{% endif %}
                        style="display: block;
                               padding: 0.5rem 0.8rem;
                               border: 1px solid rgba(255,255,255,0.1);
@@ -37,4 +44,17 @@
             </div>
         {% endfor %}
     </main>
+    <script>
+        function toggleOffline(hide) {
+            document.querySelectorAll('[data-offline]').forEach(el => {
+                el.style.display = hide ? 'none' : 'block';
+            });
+            localStorage.setItem('hideOffline', hide);
+        }
+        // Restore preference
+        if (localStorage.getItem('hideOffline') === 'true') {
+            document.getElementById('hide-offline').checked = true;
+            toggleOffline(true);
+        }
+    </script>
 {% endblock content %}

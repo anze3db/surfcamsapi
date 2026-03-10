@@ -34,7 +34,8 @@
         {% endif %}
         <ul style=" overflow-x:scroll; white-space: nowrap; line-height: 60px;">
             {% for related_cam in related_cams %}
-                <li style="list-style: none; display: inline;">
+                <li {% if related_cam.offline_since %}data-offline{% endif %}
+                    style="list-style: none; display: inline;">
                     <span style="color: {% if related_cam.offline_since %}#888{% else %}{{ related_cam.bullet_color }}{% endif %}">•</span>
                     <a style="color: {% if related_cam.offline_since %}#888{% else %}{{ related_cam.title_color }}{% endif %};
                               margin: 20px 0px"
@@ -54,5 +55,10 @@
             (function () {
                 const video = new Video('{{ cam.proxy_url }}', 'javascript:history.back()').play();
             })();
+            if (localStorage.getItem('hideOffline') === 'true') {
+                document.querySelectorAll('[data-offline]').forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
     </script>
 {% endblock content %}
