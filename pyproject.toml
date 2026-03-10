@@ -18,7 +18,6 @@ dependencies = [
     "stamina",
     "uvicorn",
     "whitenoise",
-    "apscheduler",
     # Dev dependencies
     "djlint",
     "flakytest",

@@ -1,13 +1,14 @@
 import asyncio
-import datetime
+import logging
 
 import httpx
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-scheduler = None
+logger = logging.getLogger(__name__)
+
+INTERVAL_SECONDS = 2 * 60 * 60  # 2 hours
 
 
-async def daily_job():
+async def check_cams():
     from django.conf import settings
 
     from cams.models import Cam
@@ -26,44 +27,29 @@ async def daily_job():
                     else {},
                     timeout=10.0,
                 )
-                # Check if the response was successful
                 response.raise_for_status()
-                # If cam was offline before, update it
                 if cam.offline_since is not None:
                     cam.offline_since = None
         except (httpx.RequestError, httpx.HTTPStatusError):
             from django.utils import timezone
 
-            # Only set offline_since if it's not already set
             if cam.offline_since is None:
                 cam.offline_since = timezone.now()
         return cam
 
-    # Process cams in batches of 10
     cam_list = [cam async for cam in cams]
     for i in range(0, len(cam_list), 10):
         batch = cam_list[i : i + 10]
         await asyncio.gather(*(check_cam_status(cam) for cam in batch))
 
-    # Save all cams at once
     await Cam.objects.abulk_update(cam_list, ["offline_since"])
 
 
-async def start_scheduler():
-    global scheduler
-    if scheduler is not None:
-        return scheduler
-
-    scheduler = AsyncIOScheduler()
-
-    scheduler.add_job(
-        daily_job,
-        "interval",
-        hours=2,
-        next_run_time=datetime.datetime.now(),
-        id="daily_job",
-        replace_existing=True,
-    )
-
-    scheduler.start()
-    return scheduler
+async def run_scheduler():
+    """Run check_cams in a loop. Designed to be used as a background task."""
+    while True:
+        try:
+            await check_cams()
+        except Exception:
+            logger.exception("Scheduled check_cams failed")
+        await asyncio.sleep(INTERVAL_SECONDS)
