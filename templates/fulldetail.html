@@ -35,8 +35,8 @@
         <ul style=" overflow-x:scroll; white-space: nowrap; line-height: 60px;">
             {% for related_cam in related_cams %}
                 <li style="list-style: none; display: inline;">
-                    <span style="color: {{ cam.bullet_color }}">•</span>
-                    <a style="color: {{ related_cam.title_color }};
+                    <span style="color: {% if related_cam.offline_since %}#888{% else %}{{ related_cam.bullet_color }}{% endif %}">•</span>
+                    <a style="color: {% if related_cam.offline_since %}#888{% else %}{{ related_cam.title_color }}{% endif %};
                               margin: 20px 0px"
                        href="{% url 'cam_full_detail' related_cam.id %}">{{ related_cam.title }}</a>
                 </li>
