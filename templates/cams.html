@@ -1,19 +1,23 @@
 {% extends "layout.html" %}
 {% load static %}
 {% block content %}
+    <style>
+        .cam-chip:hover {
+            border-color: rgba(255,255,255,0.4) !important;
+        }
+    </style>
     <main class="container">
         <h1>Surfcams</h1>
         {% for category in categories %}
-            <h3 style="color: {{ category.color }}">{{ category.title }}</h3>
-            <ul style="column-width: 180px; padding: 0;">
+            <h3 style="color: {{ category.color }}; margin-bottom: 0.5rem;">{{ category.title }}</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin-bottom: 1.5rem;">
                 {% for cam in category.cam_set.all %}
-                    <li style="list-style: none;">
-                        <span style="color: {{ cam.bullet_color }}">•</span>
-                        <a style="color: {% if cam.offline_since %}#888888{% else %}{{ cam.title_color }}{% endif %}"
-                           href="{% url 'cam_full_detail' cam.slug %}">{{ cam.title }}</a>
-                    </li>
+                    <a class="cam-chip" style="display: block; padding: 0.5rem 0.8rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: {% if cam.offline_since %}#888888{% else %}{{ cam.title_color }}{% endif %}; text-decoration: none; transition: border-color 0.2s;"
+                       href="{% url 'cam_full_detail' cam.slug %}">
+                        <span style="color: {{ cam.bullet_color }}">•</span> {{ cam.title }}
+                    </a>
                 {% endfor %}
-            </ul>
+            </div>
         {% endfor %}
     </main>
 {% endblock content %}
