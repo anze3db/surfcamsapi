@@ -1,93 +1,127 @@
 {% for day in forecast_days %}
-<div>
-    <table>
-        <tr>
-            <td colspan="8">{{ day.date | date:"l, M j" }}</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td style="text-align: center; white-space: nowrap">Swell(m)</td>
-            <td style="text-align: center;" colspan="2">Primary Swell</td>
-            <td style="text-align: center;" colspan="2">Wind</td>
-        </tr>
-        {% for row in day.rows %}
+    <div>
+        <table style="border-spacing: 0;">
             <tr>
-                <td style="padding:  0px 0px; width: 12px; font-size: 10px">{{ row.wind.date | date:"G:i" }}</td>
-                <td style="white-space: nowrap">
-                    <div style="text-align: center;">{{ row.wave.min|floatformat:"1" }}-{{ row.wave.max| floatformat:"1" }}m</div>
-                </td>
-                <td style="padding: 10px 4px; text-align: center;">
-                    <span style="white-space: nowrap">
-                        <strong>{{ row.wave.primary_swell_size | floatformat:"1" }}</strong><span style="font-size:12px">m</span>
-                    </span>
-                    <span style="white-space: nowrap">
-                        <strong>{{ row.wave.primary_swell_period }}</strong><span style="font-size: 12px;">s</span>
-                    </span>
-                    <span style="white-space: nowrap">
-                        <strong>{{ row.wave.power|floatformat:"0" }}</strong><span style="font-size: 12px;">kJ</span>
-                    </span>
-                </td>
-                <td style="padding: 0 4px; text-align: center; line-height: 18px; vertical-align: middle;">
-                    <div style="transform: rotate(calc({{ row.wave.primary_swell_direction | floatformat:"0" }}deg - 270deg))">➤</div>
-                    <span style="font-size:10px;">{{ row.wave.primary_swell_direction | floatformat:"0" }}°</span>
-                </td>
-                <td style="padding: 10px 8px;">
-                    <div style="display: flex; justify-content: flex-end;">
-                        <div style="float: left;
-                                    font-size: 16px;
-                                    font-weight: bold;
-                                    display: inline-block">{{ row.wind.speed|floatformat:"0" }}</div>
-                        <div style="padding: 0px 0px 0px 4px;
-                                    float: left;
-                                    font-size:8px;
-                                    line-height: 8px;
-                                    text-align: right;
-                                    display: inline-block">
-                            {{ row.wind.gust|floatformat:"0" }}
-                            <br>
-                            kph
-                        </div>
-                    </div>
-                </td>
-                <td style="padding: 10px 8px;
-                           background-color: {{ row.wind.color }};
-                           color: white;
-                           text-align: center;
-                           line-height: 12px;
-                           white-space: nowrap">
-                    <div style="transform: rotate(calc({{ row.wind.direction | floatformat:"0" }}deg - 270deg))">➤</div>
-                    <span style="font-size: 10px">{{ row.wind.direction_type | title }}</span>
-                </td>
+                <td colspan="9">{{ day.date | date:"l, M j" }}</td>
             </tr>
-        {% endfor %}
-    </table>
-    <div style="position: relative; width: 100%; touch-action: none;">
-        <canvas class="tideChart" data-day="{{ forloop.counter0 }}" style="width: 100%; height: 180px; display: block;"></canvas>
-        <div class="tideTooltip" style="display: none; position: absolute; top: 4px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; pointer-events: none; white-space: nowrap;"></div>
-    </div>
-    <div style="display: flex; gap: 1em; justify-content: center; font-size: 12px;">
-        <table style="width: auto;">
-            {% for sun in day.sunlight %}
-                {% if forloop.counter <= 2 %}
-                    <tr>
-                        <td style="white-space: nowrap">{{ sun.type }}</td>
-                        <td>{{ sun.date | date:"H:i" }}</td>
-                    </tr>
-                {% endif %}
+            <tr>
+                <td colspan="2"></td>
+                <td style="text-align: center; white-space: nowrap">Swell(m)</td>
+                <td style="text-align: center;" colspan="2">Primary Swell</td>
+                <td style="text-align: center;" colspan="2">Wind</td>
+            </tr>
+            {% for row in day.rows %}
+                <tr>
+                    <td style="padding: 0 8px 0 0;
+                               font-size: 10px;
+                               text-align: right;
+                               white-space: nowrap">{{ row.wind.date | date:"G:i" }}</td>
+                    <td style="padding: 0;
+                               width: 4px;
+                               min-width: 4px;
+                               max-width: 4px;
+                               position: relative">
+                        <div style="position: absolute;
+                                    top: 4px;
+                                    bottom: 4px;
+                                    left: 0;
+                                    width: 4px;
+                                    background-color: {{ row.wind.color }};
+                                    border-radius: 2px"></div>
+                    </td>
+                    <td style="white-space: nowrap; padding: 0 4px;">
+                        <div style="text-align: center;">{{ row.wave.min|floatformat:"1" }}-{{ row.wave.max| floatformat:"1" }}m</div>
+                    </td>
+                    <td style="padding: 10px 4px; text-align: center;">
+                        <span style="white-space: nowrap">
+                            <strong>{{ row.wave.primary_swell_size | floatformat:"1" }}</strong><span style="font-size:12px">m</span>
+                        </span>
+                        <span style="white-space: nowrap">
+                            <strong>{{ row.wave.primary_swell_period }}</strong><span style="font-size: 12px;">s</span>
+                        </span>
+                        <span style="white-space: nowrap">
+                            <strong>{{ row.wave.power|floatformat:"0" }}</strong><span style="font-size: 12px;">kJ</span>
+                        </span>
+                    </td>
+                    <td style="padding: 0 4px;
+                               text-align: center;
+                               line-height: 18px;
+                               vertical-align: middle">
+                        <div style="transform: rotate(calc({{ row.wave.primary_swell_direction | floatformat:"0" }}deg - 270deg))">➤</div>
+                        <span style="font-size:10px;">{{ row.wave.primary_swell_direction | floatformat:"0" }}°</span>
+                    </td>
+                    <td style="padding: 10px 8px;">
+                        <div style="display: flex; justify-content: flex-end;">
+                            <div style="float: left;
+                                        font-size: 16px;
+                                        font-weight: bold;
+                                        display: inline-block">{{ row.wind.speed|floatformat:"0" }}</div>
+                            <div style="padding: 0px 0px 0px 4px;
+                                        float: left;
+                                        font-size:8px;
+                                        line-height: 8px;
+                                        text-align: right;
+                                        display: inline-block">
+                                {{ row.wind.gust|floatformat:"0" }}
+                                <br>
+                                kph
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 10px 8px;
+                               text-align: center;
+                               line-height: 12px;
+                               white-space: nowrap">
+                        <div style="transform: rotate(calc({{ row.wind.direction | floatformat:"0" }}deg - 270deg))">➤</div>
+                        <span style="font-size: 10px">{{ row.wind.direction_type | title }}</span>
+                    </td>
+                </tr>
             {% endfor %}
         </table>
-        <table style="width: auto;">
-            {% for sun in day.sunlight %}
-                {% if forloop.counter > 2 %}
-                    <tr>
-                        <td style="white-space: nowrap">{{ sun.type }}</td>
-                        <td>{{ sun.date | date:"H:i" }}</td>
-                    </tr>
-                {% endif %}
-            {% endfor %}
-        </table>
+        <div style="position: relative; width: 100%; touch-action: none;">
+            <canvas class="tideChart"
+                    data-day="{{ forloop.counter0 }}"
+                    style="width: 100%;
+                           height: 180px;
+                           display: block"></canvas>
+            <div class="tideTooltip"
+                 style="display: none;
+                        position: absolute;
+                        top: 4px;
+                        background: rgba(0,0,0,0.8);
+                        color: #fff;
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        font-size: 12px;
+                        pointer-events: none;
+                        white-space: nowrap"></div>
+        </div>
+        <div style="display: flex;
+                    gap: 1em;
+                    justify-content: center;
+                    font-size: 12px">
+            <table style="width: auto;">
+                {% for sun in day.sunlight %}
+                    {% if forloop.counter <= 2 %}
+                        <tr>
+                            <td style="white-space: nowrap">{{ sun.type }}</td>
+                            <td>{{ sun.date | date:"H:i" }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+            <table style="width: auto;">
+                {% for sun in day.sunlight %}
+                    {% if forloop.counter > 2 %}
+                        <tr>
+                            <td style="white-space: nowrap">{{ sun.type }}</td>
+                            <td>{{ sun.date | date:"H:i" }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </table>
+        </div>
     </div>
-</div>
 {% endfor %}
 <script>
 (function() {
