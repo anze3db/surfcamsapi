@@ -24,12 +24,12 @@
                               text-decoration: none;
                               transition: border-color 0.2s"
                        href="{% url 'cam_full_detail' cam.slug %}">
-                        {{ cam.title }} <span style="color: {{ cam.bullet_color }}">•</span>
+                        {{ cam.title }}
                         <div style="font-size: 0.65rem;">
                             {% if cam.offline_since %}
                                 <span style="color: #888;">offline {{ cam.offline_since|timesince }}</span>
                             {% else %}
-                                <span style="color: #55AB68;">online</span>
+                                <span style="color: {{ cam.bullet_color }}">{{ cam.subtitle }}</span>
                             {% endif %}
                         </div>
                     </a>
