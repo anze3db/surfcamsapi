@@ -10,11 +10,28 @@
         <h1>Surfcams</h1>
         {% for category in categories %}
             <h3 style="color: {{ category.color }}; margin-bottom: 0.5rem;">{{ category.title }}</h3>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin-bottom: 1.5rem;">
+            <div style="display: flex;
+                        flex-wrap: wrap;
+                        gap: 0.4rem 1rem;
+                        margin-bottom: 1.5rem">
                 {% for cam in category.cam_set.all %}
-                    <a class="cam-chip" style="display: block; padding: 0.5rem 0.8rem; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: {% if cam.offline_since %}#888888{% else %}{{ cam.title_color }}{% endif %}; text-decoration: none; transition: border-color 0.2s;"
+                    <a class="cam-chip"
+                       style="display: block;
+                              padding: 0.5rem 0.8rem;
+                              border: 1px solid rgba(255,255,255,0.1);
+                              border-radius: 6px;
+                              color: {% if cam.offline_since %}#888888{% else %}{{ cam.title_color }}{% endif %};
+                              text-decoration: none;
+                              transition: border-color 0.2s"
                        href="{% url 'cam_full_detail' cam.slug %}">
-                        <span style="color: {{ cam.bullet_color }}">•</span> {{ cam.title }}
+                        {{ cam.title }} <span style="color: {{ cam.bullet_color }}">•</span>
+                        <div style="font-size: 0.65rem;">
+                            {% if cam.offline_since %}
+                                <span style="color: #888;">offline {{ cam.offline_since|timesince }}</span>
+                            {% else %}
+                                <span style="color: #55AB68;">online</span>
+                            {% endif %}
+                        </div>
                     </a>
                 {% endfor %}
             </div>
