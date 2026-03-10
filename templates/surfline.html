@@ -1,99 +1,383 @@
-<div class="grid">
-    <div>
-        <table>
-            {% for tide in tides %}
-                <tr>
-                    <td>
-                        {% if tide.type == "HIGH" %}
-                            ▲
-                        {% else %}
-                            ▼
-                        {% endif %}
-                        {{ tide.type | title }}
-                    </td>
-                    <td>{{ tide.date | date:"H:i" }}</td>
-                    <td style="text-align: right;">{{ tide.height }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
-    <div>
-        <table>
-            {% for sun in sunlight %}
-                <tr>
-                    <td>{{ sun.type | title }}</td>
-                    <td style="text-align: right;">{{ sun.date | date:"H:i" }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
-</div>
+{% for day in forecast_days %}
 <div>
     <table>
-        {% for wind, wave in wind_and_waves %}
-            {% if wind.break %}
-                <tr>
-                    <td colspan="7">{{ wind.date | date:"l, M j" }}</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td style="text-align: center;">Swell(m)</td>
-                    <td style="text-align: center;">Primary Swell</td>
-                    <td style="text-align: center;" colspan="2">Wind</td>
-                </tr>
-            {% else %}
-                <tr>
-                    <td style="padding:  0px 0px; width: 12px; font-size: 10px">{{ wind.date | date:"G:i" }}</td>
-                    <td style="">
-                        <div style="text-align: center;">{{ wave.min|floatformat:"1" }}-{{ wave.max| floatformat:"1" }}m</div>
-                    </td>
-                    <td style="padding: 10px 8px;
-                               line-height: 36px;
-                               display: flex;
-                               justify-content: space-evenly">
-                        <div>
-                            <strong class="margin: 0px 10px">{{ wave.primary_swell_size | floatformat:"1" }}</strong><span style="font-size:12px">m</span>
+        <tr>
+            <td colspan="7">{{ day.date | date:"l, M j" }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td style="text-align: center;">Swell(m)</td>
+            <td style="text-align: center;">Primary Swell</td>
+            <td style="text-align: center;" colspan="2">Wind</td>
+        </tr>
+        {% for row in day.rows %}
+            <tr>
+                <td style="padding:  0px 0px; width: 12px; font-size: 10px">{{ row.wind.date | date:"G:i" }}</td>
+                <td style="">
+                    <div style="text-align: center;">{{ row.wave.min|floatformat:"1" }}-{{ row.wave.max| floatformat:"1" }}m</div>
+                </td>
+                <td style="padding: 10px 8px;
+                           line-height: 36px;
+                           display: flex;
+                           justify-content: space-evenly">
+                    <div>
+                        <strong class="margin: 0px 10px">{{ row.wave.primary_swell_size | floatformat:"1" }}</strong><span style="font-size:12px">m</span>
+                    </div>
+                    <div>
+                        <strong>{{ row.wave.primary_swell_period }}</strong><span style="font-size: 12px;">s</span>
+                    </div>
+                    <div>
+                        <strong>{{ row.wave.power|floatformat:"0" }}</strong><span style="font-size: 12px;">kJ</span>
+                    </div>
+                    <div style="text-align: center; line-height: 18px; display: inline-block;">
+                        <div style="transform: rotate(calc({{ row.wave.primary_swell_direction | floatformat:"0" }}deg - 270deg))">➤</div>
+                        <span style="font-size:10px;">{{ row.wave.primary_swell_direction | floatformat:"0" }}°</span>
+                    </div>
+                </td>
+                <td style="padding: 10px 8px;">
+                    <div style="display: flex; justify-content: flex-end;">
+                        <div style="float: left;
+                                    font-size: 16px;
+                                    font-weight: bold;
+                                    display: inline-block">{{ row.wind.speed|floatformat:"0" }}</div>
+                        <div style="padding: 0px 0px 0px 4px;
+                                    float: left;
+                                    font-size:8px;
+                                    line-height: 8px;
+                                    text-align: right;
+                                    display: inline-block">
+                            {{ row.wind.gust|floatformat:"0" }}
+                            <br>
+                            kph
                         </div>
-                        <div>
-                            <strong>{{ wave.primary_swell_period }}</strong><span style="font-size: 12px;">s</span>
-                        </div>
-                        <div>
-                            <strong>{{ wave.power|floatformat:"0" }}</strong><span style="font-size: 12px;">kJ</span>
-                        </div>
-                        <div style="text-align: center; line-height: 18px; display: inline-block;">
-                            <div style="transform: rotate(calc({{ wave.primary_swell_direction | floatformat:"0" }}deg - 270deg))">➤</div>
-                            <span style="font-size:10px;">{{ wave.primary_swell_direction | floatformat:"0" }}°</span>
-                        </div>
-                    </td>
-                    <td style="padding: 10px 8px;">
-                        <div style="display: flex; justify-content: flex-end;">
-                            <div style="float: left;
-                                        font-size: 16px;
-                                        font-weight: bold;
-                                        display: inline-block">{{ wind.speed|floatformat:"0" }}</div>
-                            <div style="padding: 0px 0px 0px 4px;
-                                        float: left;
-                                        font-size:8px;
-                                        line-height: 8px;
-                                        text-align: right;
-                                        display: inline-block">
-                                {{ wind.gust|floatformat:"0" }}
-                                <br>
-                                kph
-                            </div>
-                        </div>
-                    </td>
-                    <td style="padding: 10px 8px;
-                               background-color: {{ wind.color }};
-                               color: white;
-                               text-align: center;
-                               line-height: 12px">
-                        <div style="transform: rotate(calc({{ wind.direction | floatformat:"0" }}deg - 270deg))">➤</div>
-                        <span style="font-size: 10px">{{ wind.direction_type | title }}</span>
-                    </td>
-                    <!-- D8833B -->
-                </tr>
-            {% endif %}
+                    </div>
+                </td>
+                <td style="padding: 10px 8px;
+                           background-color: {{ row.wind.color }};
+                           color: white;
+                           text-align: center;
+                           line-height: 12px">
+                    <div style="transform: rotate(calc({{ row.wind.direction | floatformat:"0" }}deg - 270deg))">➤</div>
+                    <span style="font-size: 10px">{{ row.wind.direction_type | title }}</span>
+                </td>
+            </tr>
         {% endfor %}
     </table>
+    <div style="position: relative; width: 100%; touch-action: none;">
+        <canvas class="tideChart" data-day="{{ forloop.counter0 }}" style="width: 100%; height: 180px; display: block;"></canvas>
+        <div class="tideTooltip" style="display: none; position: absolute; top: 4px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; pointer-events: none; white-space: nowrap;"></div>
+    </div>
+    <div style="display: flex; gap: 1em; justify-content: center; font-size: 12px;">
+        <table style="width: auto;">
+            {% for sun in day.sunlight %}
+                {% if forloop.counter <= 2 %}
+                    <tr>
+                        <td>{{ sun.type }}</td>
+                        <td>{{ sun.date | date:"H:i" }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+        <table style="width: auto;">
+            {% for sun in day.sunlight %}
+                {% if forloop.counter > 2 %}
+                    <tr>
+                        <td>{{ sun.type }}</td>
+                        <td>{{ sun.date | date:"H:i" }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
 </div>
+{% endfor %}
+<script>
+(function() {
+    const chartDays = {{ chart_days_json|safe }};
+    const unit = "{{ tide_unit }}";
+    const dpr = window.devicePixelRatio || 1;
+
+    const X_MIN = 0, X_MAX = 1440, X_SPAN = X_MAX - X_MIN;
+
+    function minutesToX(min, pad, w) {
+        return pad + ((min - X_MIN) / X_SPAN) * (w - pad * 2);
+    }
+
+    function heightToY(h, minH, maxH, topPad, plotH) {
+        return topPad + plotH - ((h - minH) / (maxH - minH || 1)) * plotH;
+    }
+
+    // Monotone cubic spline interpolation (Fritsch-Carlson)
+    function buildSpline(pts) {
+        const n = pts.length;
+        if (n < 2) return function() { return n ? pts[0].height : 0; };
+        const xs = pts.map(p => p.minutes);
+        const ys = pts.map(p => p.height);
+        const ds = [];
+        const ms = [];
+        for (let i = 0; i < n - 1; i++) {
+            const dx = xs[i + 1] - xs[i];
+            ds.push(dx);
+            ms.push((ys[i + 1] - ys[i]) / (dx || 1));
+        }
+        const c = [ms[0]];
+        for (let i = 1; i < n - 1; i++) {
+            if (ms[i - 1] * ms[i] <= 0) { c.push(0); }
+            else { c.push(2 / (1 / ms[i - 1] + 1 / ms[i])); }
+        }
+        c.push(ms[n - 2]);
+        return function(x) {
+            if (x <= xs[0]) return ys[0];
+            if (x >= xs[n - 1]) return ys[n - 1];
+            let lo = 0, hi = n - 1;
+            while (lo < hi - 1) {
+                const mid = (lo + hi) >> 1;
+                if (xs[mid] <= x) lo = mid; else hi = mid;
+            }
+            const i = lo;
+            const h = ds[i];
+            const a = ys[i];
+            const b = c[i];
+            const ci2 = (3 * ms[i] - 2 * c[i] - c[i + 1]) / h;
+            const di2 = (c[i] + c[i + 1] - 2 * ms[i]) / (h * h);
+            const dx = x - xs[i];
+            return a + b * dx + ci2 * dx * dx + di2 * dx * dx * dx;
+        };
+    }
+
+    function drawClampedText(ctx, text, x, y, W) {
+        const m = ctx.measureText(text);
+        const hw = m.width / 2;
+        if (x - hw < 2) { ctx.textAlign = 'left'; x = 2; }
+        else if (x + hw > W - 2) { ctx.textAlign = 'right'; x = W - 2; }
+        else { ctx.textAlign = 'center'; }
+        ctx.fillText(text, x, y);
+    }
+
+    function renderChart(canvas, tooltip, dayData, dayIndex) {
+        const points = dayData.chart_points;
+        const extremes = dayData.extremes;
+        const sun = dayData.sunlight;
+        const spline = buildSpline(points);
+
+        function draw(hoverMin) {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            const W = rect.width;
+            const H = rect.height;
+            const pad = 0;
+            const topPad = 14;
+            const botPad = 20;
+            const plotH = H - topPad - botPad;
+
+            ctx.clearRect(0, 0, W, H);
+            if (points.length === 0) return;
+
+            const minH = unit === 'ft' ? -1.5 : -0.5;
+            const maxH = unit === 'ft' ? 14.0 : 4.3;
+
+            // Sunlight background zones
+            if (sun) {
+                ctx.fillStyle = 'rgba(10, 15, 30, 0.7)';
+                ctx.fillRect(minutesToX(X_MIN, pad, W), 0, minutesToX(sun.dawn, pad, W) - minutesToX(X_MIN, pad, W), H);
+
+                ctx.fillStyle = 'rgba(30, 40, 70, 0.4)';
+                ctx.fillRect(minutesToX(sun.dawn, pad, W), 0, minutesToX(sun.sunrise, pad, W) - minutesToX(sun.dawn, pad, W), H);
+
+                ctx.fillStyle = 'rgba(30, 40, 70, 0.4)';
+                ctx.fillRect(minutesToX(sun.sunset, pad, W), 0, minutesToX(sun.dusk, pad, W) - minutesToX(sun.sunset, pad, W), H);
+
+                ctx.fillStyle = 'rgba(10, 15, 30, 0.7)';
+                ctx.fillRect(minutesToX(sun.dusk, pad, W), 0, minutesToX(X_MAX, pad, W) - minutesToX(sun.dusk, pad, W), H);
+            }
+
+            // Generate smooth curve points
+            const curveRes = 2;
+            const curvePoints = [];
+            const startMin = points[0].minutes;
+            const endMin = points[points.length - 1].minutes;
+            const steps = Math.ceil((minutesToX(endMin, pad, W) - minutesToX(startMin, pad, W)) / curveRes);
+            for (let i = 0; i <= steps; i++) {
+                const min = startMin + (endMin - startMin) * (i / steps);
+                curvePoints.push({x: minutesToX(min, pad, W), y: heightToY(spline(min), minH, maxH, topPad, plotH), min: min});
+            }
+
+            function lightOpacity(min) {
+                if (!sun) return 1;
+                if (min < sun.dawn || min > sun.dusk) return 0.25;
+                if (min < sun.sunrise || min > sun.sunset) return 0.5;
+                return 1;
+            }
+
+            const zoneBounds = sun ? [sun.dawn, sun.sunrise, sun.sunset, sun.dusk] : [];
+
+            function drawSegments(drawFn) {
+                let segStart = 0;
+                for (let i = 1; i < curvePoints.length; i++) {
+                    let crossed = false;
+                    for (const b of zoneBounds) {
+                        if ((curvePoints[i - 1].min < b) !== (curvePoints[i].min < b)) {
+                            crossed = true;
+                            break;
+                        }
+                    }
+                    if (crossed || i === curvePoints.length - 1) {
+                        const end = i === curvePoints.length - 1 ? i + 1 : i;
+                        const midIdx = Math.floor((segStart + end - 1) / 2);
+                        const alpha = lightOpacity(curvePoints[midIdx].min);
+                        drawFn(segStart, end, alpha);
+                        segStart = i - 1;
+                    }
+                }
+            }
+
+            // Filled area
+            drawSegments(function(from, to, alpha) {
+                ctx.beginPath();
+                ctx.moveTo(curvePoints[from].x, curvePoints[from].y);
+                for (let i = from + 1; i < to; i++) ctx.lineTo(curvePoints[i].x, curvePoints[i].y);
+                ctx.lineTo(curvePoints[to - 1].x, topPad + plotH);
+                ctx.lineTo(curvePoints[from].x, topPad + plotH);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(56, 152, 236, ' + (0.25 * alpha) + ')';
+                ctx.fill();
+            });
+
+            // Curve line
+            drawSegments(function(from, to, alpha) {
+                ctx.beginPath();
+                ctx.moveTo(curvePoints[from].x, curvePoints[from].y);
+                for (let i = from + 1; i < to; i++) ctx.lineTo(curvePoints[i].x, curvePoints[i].y);
+                ctx.strokeStyle = 'rgba(56, 152, 236, ' + (0.9 * alpha) + ')';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+
+            // Hour tick marks
+            ctx.strokeStyle = 'rgba(136, 136, 136, 0.3)';
+            ctx.lineWidth = 1;
+            for (let h = 0; h <= 24; h++) {
+                const x = minutesToX(h * 60, pad, W);
+                ctx.beginPath();
+                ctx.moveTo(x, topPad + plotH);
+                ctx.lineTo(x, topPad + plotH + 5);
+                ctx.stroke();
+            }
+
+            // Time axis labels
+            ctx.fillStyle = '#888';
+            ctx.font = '10px sans-serif';
+            for (let h = 0; h <= 24; h += 3) {
+                const x = minutesToX(h * 60, pad, W);
+                drawClampedText(ctx, h + ':00', x, H - 4, W);
+            }
+
+            // Extremes labels — hide only between 23:00-24:00 and 0:00-1:00
+            const visibleExtremes = extremes.filter(e => e.minutes >= 60 && e.minutes <= 1380);
+            visibleExtremes.forEach(e => {
+                const x = minutesToX(e.minutes, pad, W);
+                const y = heightToY(e.height, minH, maxH, topPad, plotH);
+
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, topPad + plotH);
+                ctx.strokeStyle = e.type === 'HIGH' ? 'rgba(56, 152, 236, 0.75)' : 'rgba(224, 112, 64, 0.75)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = e.type === 'HIGH' ? '#3898ec' : '#e07040';
+                ctx.fill();
+
+                ctx.fillStyle = '#ccc';
+                ctx.font = 'bold 15px sans-serif';
+                drawClampedText(ctx, e.time, x, y - 26, W);
+                ctx.font = '14px sans-serif';
+                drawClampedText(ctx, e.label, x, y - 10, W);
+            });
+
+            // Current time line (today only)
+            if (dayIndex === 0) {
+                const now = new Date();
+                const nowMin = now.getHours() * 60 + now.getMinutes();
+                const nx = minutesToX(nowMin, pad, W);
+                ctx.beginPath();
+                ctx.moveTo(nx, 0);
+                ctx.lineTo(nx, topPad + plotH);
+                ctx.strokeStyle = 'rgba(255, 60, 60, 0.7)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Hover line
+            if (hoverMin !== null && hoverMin >= X_MIN && hoverMin <= X_MAX) {
+                const x = minutesToX(hoverMin, pad, W);
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, topPad + plotH);
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                const h = spline(hoverMin);
+                const cy = heightToY(h, minH, maxH, topPad, plotH);
+                ctx.beginPath();
+                ctx.arc(x, cy, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+            }
+        }
+
+        function getMinutesFromEvent(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const x = clientX - rect.left;
+            const W = rect.width;
+            const min = X_MIN + (x / W) * X_SPAN;
+            return Math.max(X_MIN, Math.min(X_MAX, min));
+        }
+
+        function showTooltip(e) {
+            const min = getMinutesFromEvent(e);
+            const h = spline(min);
+            const hrs = Math.floor(min / 60);
+            const mins = Math.round(min % 60);
+            const timeStr = hrs.toString().padStart(2, '0') + ':' + (Math.round(mins / 5) * 5).toString().padStart(2, '0');
+            tooltip.textContent = timeStr + ' — ' + h.toFixed(2) + unit;
+            tooltip.style.display = 'block';
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            let left = clientX - rect.left + 10;
+            if (left + 120 > rect.width) left = clientX - rect.left - 120;
+            tooltip.style.left = left + 'px';
+            draw(min);
+        }
+
+        function hideTooltip() {
+            tooltip.style.display = 'none';
+            draw(null);
+        }
+
+        canvas.addEventListener('mousemove', showTooltip);
+        canvas.addEventListener('mouseleave', hideTooltip);
+        canvas.addEventListener('touchmove', function(e) { e.preventDefault(); showTooltip(e); }, {passive: false});
+        canvas.addEventListener('touchend', hideTooltip);
+
+        draw(null);
+        window.addEventListener('resize', function() { draw(null); });
+    }
+
+    // Initialize all charts
+    document.querySelectorAll('.tideChart').forEach(canvas => {
+        const dayIndex = parseInt(canvas.dataset.day);
+        const tooltip = canvas.parentElement.querySelector('.tideTooltip');
+        if (dayIndex < chartDays.length) {
+            renderChart(canvas, tooltip, chartDays[dayIndex], dayIndex);
+        }
+    });
+})();
+</script>
