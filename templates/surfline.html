@@ -211,6 +211,18 @@
             const minH = unit === 'ft' ? -1.5 : -0.5;
             const maxH = unit === 'ft' ? 14.0 : 4.3;
 
+            // Mid-tide color split: blue above mid, orange below mid
+            const dataMinH = Math.min.apply(null, points.map(function(p) { return p.height; }));
+            const dataMaxH = Math.max.apply(null, points.map(function(p) { return p.height; }));
+            const midTideH = (dataMinH + dataMaxH) / 2;
+            const midTideY = heightToY(midTideH, minH, maxH, topPad, plotH);
+
+            function tideColor(above, alpha) {
+                return above
+                    ? 'rgba(56, 152, 236, ' + alpha + ')'
+                    : 'rgba(230, 140, 50, ' + alpha + ')';
+            }
+
             // Sunlight background zones
             if (sun) {
                 ctx.fillStyle = 'rgba(10, 15, 30, 0.7)';
@@ -266,26 +278,54 @@
                 }
             }
 
-            // Filled area
-            drawSegments(function(from, to, alpha) {
-                ctx.beginPath();
-                ctx.moveTo(curvePoints[from].x, curvePoints[from].y);
-                for (let i = from + 1; i < to; i++) ctx.lineTo(curvePoints[i].x, curvePoints[i].y);
-                ctx.lineTo(curvePoints[to - 1].x, topPad + plotH);
-                ctx.lineTo(curvePoints[from].x, topPad + plotH);
-                ctx.closePath();
-                ctx.fillStyle = 'rgba(56, 152, 236, ' + (0.25 * alpha) + ')';
-                ctx.fill();
-            });
+            // Split a range of curvePoints into sub-segments at mid-tide crossings
+            // Returns array of {pts: [{x,y},...], above: bool}
+            function splitAtMidTide(from, to) {
+                var segs = [];
+                var currentPts = [{x: curvePoints[from].x, y: curvePoints[from].y}];
+                var currentAbove = curvePoints[from].y <= midTideY;
+                for (var i = from + 1; i < to; i++) {
+                    var above = curvePoints[i].y <= midTideY;
+                    if (above !== currentAbove) {
+                        var p = curvePoints[i - 1], c = curvePoints[i];
+                        var t = (midTideY - p.y) / (c.y - p.y);
+                        var crossPt = {x: p.x + t * (c.x - p.x), y: midTideY};
+                        currentPts.push(crossPt);
+                        segs.push({pts: currentPts, above: currentAbove});
+                        currentPts = [crossPt, {x: c.x, y: c.y}];
+                        currentAbove = above;
+                    } else {
+                        currentPts.push({x: curvePoints[i].x, y: curvePoints[i].y});
+                    }
+                }
+                if (currentPts.length > 0) segs.push({pts: currentPts, above: currentAbove});
+                return segs;
+            }
 
-            // Curve line
+            // Filled area + Curve line
             drawSegments(function(from, to, alpha) {
-                ctx.beginPath();
-                ctx.moveTo(curvePoints[from].x, curvePoints[from].y);
-                for (let i = from + 1; i < to; i++) ctx.lineTo(curvePoints[i].x, curvePoints[i].y);
-                ctx.strokeStyle = 'rgba(56, 152, 236, ' + (0.9 * alpha) + ')';
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                var subSegs = splitAtMidTide(from, to);
+                for (var s = 0; s < subSegs.length; s++) {
+                    var seg = subSegs[s];
+                    var pts = seg.pts;
+                    if (pts.length < 2) continue;
+                    // Fill
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for (var j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
+                    ctx.lineTo(pts[pts.length - 1].x, topPad + plotH);
+                    ctx.lineTo(pts[0].x, topPad + plotH);
+                    ctx.closePath();
+                    ctx.fillStyle = tideColor(seg.above, 0.25 * alpha);
+                    ctx.fill();
+                    // Stroke
+                    ctx.beginPath();
+                    ctx.moveTo(pts[0].x, pts[0].y);
+                    for (var j = 1; j < pts.length; j++) ctx.lineTo(pts[j].x, pts[j].y);
+                    ctx.strokeStyle = tideColor(seg.above, 0.9 * alpha);
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             });
 
             // Hour tick marks
