@@ -7,10 +7,19 @@
         }
     </style>
     <main class="container">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex;
+                    align-items: center;
+                    justify-content: space-between">
             <h1>Surfcams</h1>
-            <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; cursor: pointer; user-select: none;">
-                <input type="checkbox" id="hide-offline" onchange="toggleOffline(this.checked)">
+            <label style="display: flex;
+                          align-items: center;
+                          gap: 0.4rem;
+                          font-size: 0.85rem;
+                          cursor: pointer;
+                          user-select: none">
+                <input type="checkbox"
+                       id="hide-offline"
+                       onchange="toggleOffline(this.checked)">
                 Hide offline
             </label>
         </div>
@@ -31,14 +40,11 @@
                               text-decoration: none;
                               transition: border-color 0.2s"
                        href="{% url 'cam_full_detail' cam.slug %}">
-                        {{ cam.title }}
-                        <div style="font-size: 0.65rem;">
-                            {% if cam.offline_since %}
-                                <span style="color: #888;">offline {{ cam.offline_since|timesince }}</span>
-                            {% else %}
-                                <span style="color: {{ cam.bullet_color }}">{{ cam.subtitle }}</span>
-                            {% endif %}
-                        </div>
+                        {% if cam.offline_since %}
+                            <span style="color: #888">⊙ {{ cam.title }}</span>
+                        {% else %}
+                            <span style="color: {{ cam.bullet_color }}">⊙</span> {{ cam.title }}
+                        {% endif %}
                     </a>
                 {% endfor %}
             </div>
