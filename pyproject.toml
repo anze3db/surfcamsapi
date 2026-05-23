@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = "~=3.14.0"
 dependencies = [
+    "curl-cffi",
     "django",
     "django-admin-sortable2",
     "django-environ",

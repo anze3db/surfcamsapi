@@ -2,8 +2,9 @@ import asyncio
 import json
 from datetime import UTC, datetime
 
-import httpx
 import stamina
+from curl_cffi import AsyncSession
+from curl_cffi.requests.exceptions import HTTPError, RequestException
 from django.shortcuts import render
 
 from cams.models import Cam
@@ -14,11 +15,11 @@ async def get_surfline_data(request, cam_id: int):
         cam = await Cam.objects.aget(id=cam_id)
     except Cam.DoesNotExist:
         return render(request, "surfline-error.html", {"message": "Cam not found"})
-    async with httpx.AsyncClient() as client:
+    async with AsyncSession(impersonate="chrome") as client:
         fetcher = SurflineFetcher(cam.spot_id, client)
         try:
             tides, sunlight, wind, waves = await fetcher.fetch_all()
-        except httpx.HTTPError:
+        except RequestException:
             return render(request, "surfline-error.html", {"cam": cam})
     # Group wind/wave data by day
     forecast_days = []
@@ -90,7 +91,7 @@ class SurflineFetcher:
         self.day_params = {"spotId": spot_id, "days": 3}
         self.spot_id = spot_id
 
-    @stamina.retry(on=httpx.HTTPError, attempts=3)
+    @stamina.retry(on=RequestException, attempts=3)
     async def fetch_tides(self):
         tide_response = await self.client.get(
             self.base_url + "tides",
@@ -98,7 +99,7 @@ class SurflineFetcher:
             params={"spotId": self.spot_id, "days": 4},
         )
         if tide_response.status_code != 200:
-            raise httpx.HTTPError("Non-200 response")
+            raise HTTPError("Non-200 response")
         unit = tide_response.json()["associated"]["units"]["tideHeight"].lower()
         today = datetime.now(UTC).date()
         chart_points = []
@@ -136,7 +137,7 @@ class SurflineFetcher:
             "unit": unit,
         }
 
-    @stamina.retry(on=httpx.HTTPError, attempts=3)
+    @stamina.retry(on=RequestException, attempts=3)
     async def fetch_sunlight(self):
         sunlight_response = await self.client.get(
             self.base_url + "sunlight",
@@ -144,7 +145,7 @@ class SurflineFetcher:
             params=self.day_params,
         )
         if sunlight_response.status_code != 200:
-            raise httpx.HTTPError("Non-200 response")
+            raise HTTPError("Non-200 response")
 
         today = datetime.now(UTC).date()
         chart_data = []
@@ -181,7 +182,7 @@ class SurflineFetcher:
             "chart_data": chart_data,
         }
 
-    @stamina.retry(on=httpx.HTTPError, attempts=3)
+    @stamina.retry(on=RequestException, attempts=3)
     async def fetch_wind(self):
         wind_response = await self.client.get(
             self.base_url + "wind",
@@ -189,7 +190,7 @@ class SurflineFetcher:
             params=self.day_params,
         )
         if wind_response.status_code != 200:
-            raise httpx.HTTPError("Non-200 response")
+            raise HTTPError("Non-200 response")
         res = []
         data = wind_response.json()["data"]["wind"]
         prev_hour = 24
@@ -239,7 +240,7 @@ class SurflineFetcher:
             )
         return res
 
-    @stamina.retry(on=httpx.HTTPError, attempts=3)
+    @stamina.retry(on=RequestException, attempts=3)
     async def fetch_waves(self):
         wave_response = await self.client.get(
             self.base_url + "wave",
@@ -247,7 +248,7 @@ class SurflineFetcher:
             params=self.day_params,
         )
         if wave_response.status_code != 200:
-            raise httpx.HTTPError("Non-200 response")
+            raise HTTPError("Non-200 response")
         res = []
         data = wave_response.json()["data"]["wave"]
         prev_hour = 24
