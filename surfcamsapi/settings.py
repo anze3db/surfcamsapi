@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import asyncio
 from pathlib import Path
 
 import environ
@@ -164,12 +165,25 @@ DEFAULT_NEXT_PAGE = "/"
 
 # Sentry
 
+
+def _sentry_before_send(event, hint):
+    # Drop handled CancelledErrors: these are almost always clients
+    # disconnecting mid-request (e.g. during async session loading), surfaced
+    # as noise by asgiref/asyncio rather than a real fault.
+    exc_info = hint.get("exc_info")
+    if exc_info and issubclass(exc_info[0], asyncio.CancelledError):
+        return None
+    return event
+
+
 if SENTRY_DNS := env("SENTRY_DNS"):
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[
             DjangoIntegration(),
         ],
+        before_send=_sentry_before_send,
+        ignore_errors=[asyncio.CancelledError],
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
