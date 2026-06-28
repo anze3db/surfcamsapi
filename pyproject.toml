@@ -9,7 +9,7 @@ dependencies = [
     "django",
     "django-admin-sortable2",
     "django-environ",
-    "django-ninja",
+    "django-ninja>=1.6.2",
     "django-tui",
     "gunicorn",
     "httpx",
@@ -32,3 +32,7 @@ minversion = "6.0"
 addopts = "--verbose --reuse-db --durations=3"
 python_files = ["tests.py"]
 DJANGO_SETTINGS_MODULE = "surfcamsapi.settings"
+filterwarnings = [
+    # WhiteNoise warns when STATIC_ROOT is missing; tests don't run collectstatic.
+    "ignore:No directory at:UserWarning",
+]
