@@ -45,11 +45,27 @@ async def check_cams():
     await Cam.objects.abulk_update(cam_list, ["offline_since"])
 
 
+async def run_job(job):
+    """Run a job with Django's request-style connection handling.
+
+    Background tasks never hit the request_started/request_finished signals,
+    so stale DB connections are discarded here before and after each run.
+    """
+    from asgiref.sync import sync_to_async
+    from django.db import close_old_connections
+
+    await sync_to_async(close_old_connections)()
+    try:
+        await job()
+    finally:
+        await sync_to_async(close_old_connections)()
+
+
 async def run_scheduler():
     """Run check_cams in a loop. Designed to be used as a background task."""
     while True:
         try:
-            await check_cams()
+            await run_job(check_cams)
         except Exception:
             logger.exception("Scheduled check_cams failed")
         await asyncio.sleep(INTERVAL_SECONDS)
