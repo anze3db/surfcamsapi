@@ -135,7 +135,7 @@
 {% endfor %}
 <script>
 (function() {
-    const chartDays = {{ chart_days_json|safe }};
+    const chartDays = {{ chart_days_json|default:"[]"|safe }};
     const unit = "{{ tide_unit }}";
     const dpr = window.devicePixelRatio || 1;
 

@@ -39,6 +39,18 @@ async def get_surfline_data(request, cam_id: int):
         cam = await Cam.objects.aget(id=cam_id)
     except Cam.DoesNotExist:
         return render(request, "surfline-error.html", {"message": "Cam not found"})
+    forecast = await fetch_forecast(cam)
+    if forecast is None:
+        return render(request, "surfline-error.html", error_context(request, cam))
+    return render(request, "surfline.html", forecast)
+
+
+async def fetch_forecast(cam):
+    """Build the surfline.html context for a cam.
+
+    Returns None when the cam has a spot but every endpoint failed, so callers
+    can show an error instead.
+    """
     async with AsyncSession(impersonate="chrome") as client:
         fetcher = SurflineFetcher(cam.spot_id, client)
         tides, sunlight, wind, waves = await fetcher.fetch_all()
@@ -46,7 +58,7 @@ async def get_surfline_data(request, cam_id: int):
     # A partial forecast is still worth showing; only bail out when the spot has
     # data to fetch and every single endpoint failed.
     if cam.spot_id and not any((tides, sunlight, wind, waves)):
-        return render(request, "surfline-error.html", error_context(request, cam))
+        return None
 
     # Group wind/wave data by day, keyed on the timestamp they share so that one
     # missing endpoint leaves holes rather than misaligning the rows.
@@ -108,15 +120,11 @@ async def get_surfline_data(request, cam_id: int):
             }
         )
 
-    return render(
-        request,
-        "surfline.html",
-        {
-            "forecast_days": forecast_days,
-            "chart_days_json": json.dumps(chart_days),
-            "tide_unit": tides["unit"] if tides else "",
-        },
-    )
+    return {
+        "forecast_days": forecast_days,
+        "chart_days_json": json.dumps(chart_days),
+        "tide_unit": tides["unit"] if tides else "",
+    }
 
 
 class SurflineFetcher:

@@ -1,11 +1,10 @@
-import httpx
 from django.conf import settings
 from django.db.models import Prefetch
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
 from ninja import Field, NinjaAPI, Schema
 
 from cams.models import Cam, Category
-from surfline.urls import SurflineFetcher
+from surfline.urls import fetch_forecast
 
 api = NinjaAPI()
 
@@ -68,17 +67,7 @@ async def cams_detail(request, cam_id: int):
         cam = await Cam.objects.aget(id=cam_id)
     except Cam.DoesNotExist:
         return api.create_response(request, {"message": "Cam not found"}, status=404)
-    async with httpx.AsyncClient() as client:
-        fetcher = SurflineFetcher(cam.spot_id, client)
-        tides, sunlight, wind, waves = await fetcher.fetch_all()
-
-    return render(
-        request,
-        "detail.html",
-        {
-            "cam": cam,
-            "tides": tides,
-            "sunlight": sunlight,
-            "wind_and_waves": zip(wind, waves),
-        },
-    )
+    # An empty forecast still renders: detail.html has no htmx retry to fall
+    # back on, so it shows the cam without the forecast tables.
+    forecast = await fetch_forecast(cam) or {}
+    return render(request, "detail.html", {"cam": cam, **forecast})
