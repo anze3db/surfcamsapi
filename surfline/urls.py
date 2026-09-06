@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 from datetime import UTC, datetime
 
 import stamina
@@ -9,6 +10,29 @@ from django.shortcuts import render
 
 from cams.models import Cam
 
+logger = logging.getLogger(__name__)
+
+# The error page re-requests itself over htmx. Back off exponentially from
+# RETRY_DELAY seconds so a lasting Surfline outage doesn't turn every open cam
+# page into a request loop, and stop asking after MAX_RETRIES.
+RETRY_DELAY = 3
+RETRY_MAX_DELAY = 60
+MAX_RETRIES = 5
+
+
+def error_context(request, cam):
+    try:
+        attempt = max(int(request.GET.get("attempt", 0)), 0)
+    except ValueError:
+        attempt = 0
+    if attempt >= MAX_RETRIES:
+        return {"cam": cam, "give_up": True}
+    return {
+        "cam": cam,
+        "retry_delay": min(RETRY_DELAY * 2**attempt, RETRY_MAX_DELAY),
+        "next_attempt": attempt + 1,
+    }
+
 
 async def get_surfline_data(request, cam_id: int):
     try:
@@ -17,19 +41,30 @@ async def get_surfline_data(request, cam_id: int):
         return render(request, "surfline-error.html", {"message": "Cam not found"})
     async with AsyncSession(impersonate="chrome") as client:
         fetcher = SurflineFetcher(cam.spot_id, client)
-        try:
-            tides, sunlight, wind, waves = await fetcher.fetch_all()
-        except RequestException:
-            return render(request, "surfline-error.html", {"cam": cam})
-    # Group wind/wave data by day
+        tides, sunlight, wind, waves = await fetcher.fetch_all()
+
+    # A partial forecast is still worth showing; only bail out when the spot has
+    # data to fetch and every single endpoint failed.
+    if cam.spot_id and not any((tides, sunlight, wind, waves)):
+        return render(request, "surfline-error.html", error_context(request, cam))
+
+    # Group wind/wave data by day, keyed on the timestamp they share so that one
+    # missing endpoint leaves holes rather than misaligning the rows.
+    wind_by_date = {w["date"]: w for w in wind}
+    waves_by_date = {w["date"]: w for w in waves}
     forecast_days = []
     current_day = None
-    for w, wv in zip(wind, waves):
-        if w.get("break"):
-            current_day = {"date": w["date"], "rows": [], "sunlight": []}
+    for date in sorted(wind_by_date.keys() | waves_by_date.keys()):
+        if current_day is None or date.date() != current_day["date"].date():
+            current_day = {"date": date, "rows": [], "sunlight": []}
             forecast_days.append(current_day)
-        elif current_day is not None:
-            current_day["rows"].append({"wind": w, "wave": wv})
+        current_day["rows"].append(
+            {
+                "date": date,
+                "wind": wind_by_date.get(date),
+                "wave": waves_by_date.get(date),
+            }
+        )
 
     # Attach per-day sunlight display
     if sunlight:
@@ -91,20 +126,26 @@ class SurflineFetcher:
         self.day_params = {"spotId": spot_id, "days": 3}
         self.spot_id = spot_id
 
-    @stamina.retry(on=RequestException, attempts=3)
-    async def fetch_tides(self):
-        tide_response = await self.client.get(
-            self.base_url + "tides",
+    # Retries back off exponentially (0.5s, 1s, 2s... jittered) and are capped
+    # by wait_max, so a slow Surfline never holds the request open for long.
+    @stamina.retry(on=RequestException, attempts=3, wait_initial=0.5, wait_max=5)
+    async def fetch(self, endpoint, params=None):
+        response = await self.client.get(
+            self.base_url + endpoint,
             timeout=5.0,
-            params={"spotId": self.spot_id, "days": 4},
+            params=params or self.day_params,
         )
-        if tide_response.status_code != 200:
-            raise HTTPError("Non-200 response")
-        unit = tide_response.json()["associated"]["units"]["tideHeight"].lower()
+        if response.status_code != 200:
+            raise HTTPError(f"Non-200 response ({response.status_code}) for {endpoint}")
+        return response.json()
+
+    async def fetch_tides(self):
+        tide_json = await self.fetch("tides", {"spotId": self.spot_id, "days": 4})
+        unit = tide_json["associated"]["units"]["tideHeight"].lower()
         today = datetime.now(UTC).date()
         chart_points = []
         extremes = []
-        for tide in tide_response.json()["data"]["tides"]:
+        for tide in tide_json["data"]["tides"]:
             date = datetime.fromtimestamp(
                 tide["timestamp"] + tide["utcOffset"] * 3600, tz=UTC
             )
@@ -137,21 +178,14 @@ class SurflineFetcher:
             "unit": unit,
         }
 
-    @stamina.retry(on=RequestException, attempts=3)
     async def fetch_sunlight(self):
-        sunlight_response = await self.client.get(
-            self.base_url + "sunlight",
-            timeout=5.0,
-            params=self.day_params,
-        )
-        if sunlight_response.status_code != 200:
-            raise HTTPError("Non-200 response")
+        sunlight_json = await self.fetch("sunlight")
 
         today = datetime.now(UTC).date()
         chart_data = []
         display_days = []
 
-        for sun in sunlight_response.json()["data"]["sunlight"]:
+        for sun in sunlight_json["data"]["sunlight"]:
             def to_date(ts, offset):
                 return datetime.fromtimestamp(ts + offset * 3600, tz=UTC)
 
@@ -182,25 +216,12 @@ class SurflineFetcher:
             "chart_data": chart_data,
         }
 
-    @stamina.retry(on=RequestException, attempts=3)
     async def fetch_wind(self):
-        wind_response = await self.client.get(
-            self.base_url + "wind",
-            timeout=5.0,
-            params=self.day_params,
-        )
-        if wind_response.status_code != 200:
-            raise HTTPError("Non-200 response")
         res = []
-        data = wind_response.json()["data"]["wind"]
-        prev_hour = 24
-        for d in data:
+        for d in (await self.fetch("wind"))["data"]["wind"]:
             date = datetime.fromtimestamp(d["timestamp"] + d["utcOffset"] * 3600, tz=UTC)
             if date.hour % 3 != 0 or date.hour < 4:
                 continue
-            if date.hour < prev_hour:
-                res.append({"date": date, "break": True})
-            prev_hour = date.hour
             direction_type = d["directionType"]
             speed = d["speed"] * 1.852  # kts to kph
             color = "black"
@@ -240,47 +261,53 @@ class SurflineFetcher:
             )
         return res
 
-    @stamina.retry(on=RequestException, attempts=3)
     async def fetch_waves(self):
-        wave_response = await self.client.get(
-            self.base_url + "wave",
-            timeout=5.0,
-            params=self.day_params,
+        # Surfline retired /forecasts/wave: surf heights and swells now live on
+        # two endpoints, joined back together here on their shared timestamp.
+        surf_json, swell_json = await asyncio.gather(
+            self.fetch("surf"),
+            self.fetch("swells"),
         )
-        if wave_response.status_code != 200:
-            raise HTTPError("Non-200 response")
+        swells_by_timestamp = {s["timestamp"]: s for s in swell_json["data"]["swells"]}
         res = []
-        data = wave_response.json()["data"]["wave"]
-        prev_hour = 24
-        for d in data:
+        for d in surf_json["data"]["surf"]:
             date = datetime.fromtimestamp(d["timestamp"] + d["utcOffset"] * 3600, tz=UTC)
             if date.hour % 3 != 0 or date.hour < 4:
                 continue
-            if date.hour < prev_hour:
-                res.append({"date": date, "break": True})
-            prev_hour = date.hour
-            swells = sorted(d["swells"], key=lambda x: x["impact"], reverse=True)
+            swell = swells_by_timestamp.get(d["timestamp"], {})
+            swells = sorted(
+                swell.get("swells", []), key=lambda x: x["impact"], reverse=True
+            )
+            primary = swells[0] if swells else {}
             res.append(
                 {
                     "date": date,
                     "min": d["surf"]["min"],
                     "max": d["surf"]["max"],
                     "human": d["surf"]["humanRelation"],
-                    "score": d["surf"]["optimalScore"],
-                    "primary_swell_size": swells[0]["height"],
-                    "primary_swell_period": swells[0]["period"],
-                    "primary_swell_direction": swells[0]["direction"],
-                    "power": d["power"],
+                    "primary_swell_size": primary.get("height"),
+                    "primary_swell_period": primary.get("period"),
+                    "primary_swell_direction": primary.get("direction"),
+                    "power": swell.get("power"),
                 }
             )
         return res
+
+    async def fetch_safely(self, name, coro, default):
+        try:
+            return await coro
+        except Exception:
+            logger.warning(
+                "Surfline %s fetch failed for spot %s", name, self.spot_id, exc_info=True
+            )
+            return default
 
     async def fetch_all(self):
         if not self.spot_id:
             return None, None, [], []
         return await asyncio.gather(
-            self.fetch_tides(),
-            self.fetch_sunlight(),
-            self.fetch_wind(),
-            self.fetch_waves(),
+            self.fetch_safely("tides", self.fetch_tides(), None),
+            self.fetch_safely("sunlight", self.fetch_sunlight(), None),
+            self.fetch_safely("wind", self.fetch_wind(), []),
+            self.fetch_safely("waves", self.fetch_waves(), []),
         )
