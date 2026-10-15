@@ -2,12 +2,12 @@ from datetime import UTC, datetime, timedelta
 from unittest import mock
 
 import httpx
-from django.test import TransactionTestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from model_bakery import baker
 from potatoq import current_app
-from potatoq.testing import drain, due, tick
+from potatoq.testing import drain, due
 
-from cams import tasks  # noqa: F401  Registers the task: drain() doesn't autodiscover.
+from cams.tasks import check_cams
 from cams.models import Cam
 
 OFFLINE_SINCE = datetime(2026, 1, 1, tzinfo=UTC)
@@ -30,7 +30,7 @@ class TestCheckCams(TransactionTestCase):
         )
         self.requests = []
 
-    def run_scheduled_check(self, at, error=None):
+    def run_check(self, error=None):
         async def fake_get(client, url, headers, timeout):
             self.requests.append((url, headers))
             request = httpx.Request("GET", url)
@@ -38,10 +38,9 @@ class TestCheckCams(TransactionTestCase):
                 raise error
             return httpx.Response(404 if "down" in url else 200, request=request)
 
-        app = current_app()
-        self.assertEqual(tick(app, at=at), ["check-cams"])
+        check_cams.delay()
         with mock.patch.object(httpx.AsyncClient, "get", fake_get):
-            [task] = drain(app)
+            [task] = drain(current_app())
         self.assertEqual((task.name, task.state), ("cams.tasks.check_cams", "SUCCESS"))
 
     def assertOffline(self, cam, since=None):
@@ -55,7 +54,7 @@ class TestCheckCams(TransactionTestCase):
         self.assertIsNone(cam.offline_since)
 
     def test_check_cams(self):
-        self.run_scheduled_check(at=datetime(2026, 10, 9, 12, 0, 1, tzinfo=UTC))
+        self.run_check()
 
         self.assertOnline(self.online)
         self.assertOnline(self.back_online)
@@ -68,19 +67,16 @@ class TestCheckCams(TransactionTestCase):
         )
 
     def test_check_cams_unreachable(self):
-        self.run_scheduled_check(
-            at=datetime(2026, 10, 9, 14, 0, 1, tzinfo=UTC),
-            error=httpx.ConnectError("unreachable"),
-        )
+        self.run_check(error=httpx.ConnectError("unreachable"))
 
         self.assertOffline(self.online)
         self.assertOffline(self.back_online, since=OFFLINE_SINCE)
 
 
-class TestSchedule(TransactionTestCase):
+class TestSchedule(TestCase):
     def test_check_cams_every_two_hours(self):
         app = current_app()
-        self.assertIn("cams.tasks.check_cams", app.tasks)
+        self.assertIn(check_cams.name, app.tasks)
         start = datetime(2026, 10, 9, 11, 0, tzinfo=UTC)
         self.assertEqual(
             due(app, start, start + timedelta(hours=5)),

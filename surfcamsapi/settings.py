@@ -115,13 +115,6 @@ STATIC_ROOT = BASE_DIR / "staticroot"
 
 DATABASES = {"default": env.db()}
 
-if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
-    # The potatoq worker writes to the same file: take the write lock up front and
-    # wait for it, instead of failing with "database is locked".
-    DATABASES["default"].setdefault("OPTIONS", {}).update(
-        {"transaction_mode": "IMMEDIATE", "timeout": 20}
-    )
-
 # The default database is the broker. Every worker also runs the beat schedule.
 POTATOQ = {
     "worker_concurrency": 1,

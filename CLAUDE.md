@@ -19,7 +19,7 @@ uv run python manage.py import_json <file.json>  # Replace all cams/categories f
 uv run python manage.py collectstatic --no-input # Required before tests in CI
 ```
 
-Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against a file sqlite DB (`sqlite:///db.sqlite3`: the test DB is then in-memory and potatoq follows it to `memory://`; with `DATABASE_URL=sqlite://` potatoq would fall back to a `./potatoq.sqlite3` file), and on `main` deploys via SSH by running `.deploy/update.sh` on the server, which also restarts `surfcams-worker`. Tests that enqueue and `drain()` tasks need `TransactionTestCase` (tasks are sent on commit) and must import the task module (`drain()` doesn't autodiscover).
+Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against a Postgres service container (production runs on Postgres too), and on `main` deploys via SSH by running `.deploy/update.sh` on the server, which also restarts `surfcams-worker`. Tests that enqueue and `drain()` tasks need `TransactionTestCase` (tasks are sent on commit) and must import the task module (`drain()` doesn't autodiscover).
 
 ## Architecture
 
@@ -38,4 +38,4 @@ Django app serving surf cam streams plus Surfline forecast data. The codebase is
 
 ## Config
 
-Settings read from `.env` via `django-environ` (see `.env.example`). Key vars: `DATABASE_URL` (sqlite locally, the live `surfcams.db` is checked in), `P_REFERER` (for stream proxying), `SENTRY_DNS`, `HOST`. Static files served by WhiteNoise with `CompressedManifestStaticFilesStorage`.
+Settings read from `.env` via `django-environ` (see `.env.example`). Key vars: `DATABASE_URL` (Postgres, locally and in production; potatoq uses it as its broker too), `P_REFERER` (for stream proxying), `SENTRY_DNS`, `HOST`. Static files served by WhiteNoise with `CompressedManifestStaticFilesStorage`.
