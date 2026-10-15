@@ -9,6 +9,7 @@ This project uses `uv` for dependency management and `just` as a task runner.
 ```bash
 uv sync --locked              # Install/sync dependencies from uv.lock
 just server                   # Run dev server on port 8003 (= uv run manage.py runserver 8003)
+just worker                   # Run the potatoq worker (also runs the periodic schedule)
 uv run pytest                 # Run the full test suite (pytest-django, reuses the DB)
 uv run pytest api/tests.py    # Run a single test file
 uv run pytest api/tests.py::TestHealthApi::test_health  # Run a single test
@@ -18,7 +19,7 @@ uv run python manage.py import_json <file.json>  # Replace all cams/categories f
 uv run python manage.py collectstatic --no-input # Required before tests in CI
 ```
 
-Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against an in-memory sqlite DB, and on `main` deploys via SSH by running `.deploy/update.sh` on the server.
+Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against a file sqlite DB (`sqlite:///db.sqlite3`: the test DB is then in-memory and potatoq follows it to `memory://`; with `DATABASE_URL=sqlite://` potatoq would fall back to a `./potatoq.sqlite3` file), and on `main` deploys via SSH by running `.deploy/update.sh` on the server, which also restarts `surfcams-worker`. Tests that enqueue and `drain()` tasks need `TransactionTestCase` (tasks are sent on commit) and must import the task module (`drain()` doesn't autodiscover).
 
 ## Architecture
 
@@ -26,7 +27,8 @@ Django app serving surf cam streams plus Surfline forecast data. The codebase is
 
 **Apps and their roles:**
 - `cams/` — the only app with models. `Cam`, `Category`, and the `CategoryCam` through-model (cams belong to ordered categories via `django-admin-sortable2`). `Cam.proxy_url` and the `proxy` view route HLS streams through the server with a `P_REFERER` header to bypass hotlink protection.
-- `surfcamsapi/` — project config. Note `asgi.py` defines a **custom ASGI `application`** that starts a background scheduler task (`scheduler.run_scheduler`) on the ASGI `lifespan.startup` event. The scheduler polls every cam URL every 2 hours and sets `Cam.offline_since`. This only runs under ASGI (uvicorn/gunicorn UvicornWorker), not the WSGI/runserver path.
+- `surfcamsapi/` — project config.
+- Background work runs on a separate [potatoq](https://anze3db.github.io/potatoq/) worker (`manage.py potatoq worker`, the `surfcams-worker` systemd service), using the default database as the broker. `POTATOQ["beat_schedule"]` in `settings.py` runs `cams.tasks.check_cams` every 2 hours: it polls every cam URL and sets `Cam.offline_since`. Tasks live in each app's `tasks.py` (autodiscovered). Async tasks must call `close_old_connections` via `sync_to_async` themselves (see `check_cams`): the async ORM's connections live on asgiref's executor thread, out of reach of potatoq's per-task cleanup.
 - `surfline/` — `SurflineFetcher` wraps the unofficial Surfline API (`services.surfline.com`). It uses `curl_cffi` with `impersonate="chrome"` (Surfline blocks normal clients) and `stamina.retry` for resilience. `fetch_all()` concurrently fetches tides/sunlight/wind/waves; `get_surfline_data` reshapes them into per-day forecast rows + JSON chart data rendered into `surfline.html`.
 - `api/` — `django-ninja` JSON API (`api.urls.api`) mounted at `/api/`. Schemas alias snake_case model fields to camelCase JSON. Returns 503 on `AssertionError` (used by `/api/health`).
 

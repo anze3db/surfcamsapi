@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: sqlite://
+      DATABASE_URL: sqlite:///db.sqlite3
       SECRET_KEY: something_very_secret
     steps:
       - uses: actions/checkout@v4

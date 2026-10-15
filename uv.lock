@@ -435,6 +435,20 @@ wheels = [
 ]
 
 [[package]]
+name = "potatoq"
+version = "26.1a4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e3/f5/8c4393ae426f24794a365a619f2cc68df6152d6026eb879dd03e7fe6d468/potatoq-26.1a4.tar.gz", hash = "sha256:f376495e901e9b3863149cf680526ac77172d29677ebd71c896d22eaf9fc1921", size = 132919, upload-time = "2026-10-13T16:13:53.586Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/31/e8/2b94273da562713d9ef4241191c0fed5fa514c00f92662ba2eeee7bb240b/potatoq-26.1a4-py3-none-any.whl", hash = "sha256:77d57441139d6e0d716fc9cef02326337ee3318e93455d5c1a0ee29a196925c5", size = 151687, upload-time = "2026-10-13T16:13:52.202Z" },
+]
+
+[package.optional-dependencies]
+postgres = [
+    { name = "psycopg", extra = ["binary"] },
+]
+
+[[package]]
 name = "psycopg"
 version = "3.3.2"
 source = { registry = "https://pypi.org/simple" }
@@ -747,6 +761,7 @@ dependencies = [
     { name = "gunicorn" },
     { name = "httpx" },
     { name = "model-bakery" },
+    { name = "potatoq", extra = ["postgres"] },
     { name = "psycopg", extra = ["binary"] },
     { name = "pytest" },
     { name = "pytest-django" },
@@ -770,6 +785,7 @@ requires-dist = [
     { name = "gunicorn" },
     { name = "httpx" },
     { name = "model-bakery", specifier = ">=1.20.0" },
+    { name = "potatoq", extras = ["postgres"], specifier = ">=26.1a4" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.6" },
     { name = "pytest" },
     { name = "pytest-django" },

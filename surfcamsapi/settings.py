@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import asyncio
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_tui",
     "adminsortable2",
+    "potatoq.contrib.django",
     "cams",
 ]
 
@@ -112,6 +114,25 @@ STATIC_ROOT = BASE_DIR / "staticroot"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {"default": env.db()}
+
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    # The potatoq worker writes to the same file: take the write lock up front and
+    # wait for it, instead of failing with "database is locked".
+    DATABASES["default"].setdefault("OPTIONS", {}).update(
+        {"transaction_mode": "IMMEDIATE", "timeout": 20}
+    )
+
+# The default database is the broker. Every worker also runs the beat schedule.
+POTATOQ = {
+    "worker_concurrency": 1,
+    "beat_schedule": {
+        # Marks cams whose stream URL stops responding as offline.
+        "check-cams": {
+            "task": "cams.tasks.check_cams",
+            "schedule": timedelta(hours=2),
+        },
+    },
+}
 
 
 # Password validation

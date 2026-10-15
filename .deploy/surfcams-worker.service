@@ -1,0 +1,17 @@
+[Unit]
+Description=Surfcams Worker
+After=surfcams.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/bin/bash /home/anze/projects/surfcams/.deploy/run_worker.sh
+ExecReload=/bin/kill -HUP $MAINPID
+# Send SIGTERM to the supervisor only, and give running tasks potatoq's 25s to finish.
+KillMode=mixed
+TimeoutStopSec=35
+User=anze
+
+[Install]
+WantedBy=multi-user.target
