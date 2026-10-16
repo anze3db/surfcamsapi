@@ -25,7 +25,7 @@ dependencies = [
     "ruff",
     "pytest",
     "pytest-django",
-    "potatoq[postgres]>=26.1a4",
+    "potatoq[postgres]>=26.1a5",
 ]
 
 [tool.pytest.ini_options]

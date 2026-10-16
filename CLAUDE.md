@@ -19,7 +19,7 @@ uv run python manage.py import_json <file.json>  # Replace all cams/categories f
 uv run python manage.py collectstatic --no-input # Required before tests in CI
 ```
 
-Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against a Postgres service container (production runs on Postgres too), and on `main` deploys via SSH by running `.deploy/update.sh` on the server, which also restarts `surfcams-worker`. Tests that enqueue and `drain()` tasks need `TransactionTestCase` (tasks are sent on commit) and must import the task module (`drain()` doesn't autodiscover).
+Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against a Postgres service container (production runs on Postgres too), and on `main` deploys via SSH by running `.deploy/update.sh` on the server, which also restarts `surfcams-worker`. Tests that enqueue and `drain()` tasks need `TransactionTestCase` (tasks are sent on commit).
 
 ## Architecture
 
@@ -28,7 +28,7 @@ Django app serving surf cam streams plus Surfline forecast data. The codebase is
 **Apps and their roles:**
 - `cams/` — the only app with models. `Cam`, `Category`, and the `CategoryCam` through-model (cams belong to ordered categories via `django-admin-sortable2`). `Cam.proxy_url` and the `proxy` view route HLS streams through the server with a `P_REFERER` header to bypass hotlink protection.
 - `surfcamsapi/` — project config.
-- Background work runs on a separate [potatoq](https://anze3db.github.io/potatoq/) worker (`manage.py potatoq worker`, the `surfcams-worker` systemd service), using the default database as the broker. `POTATOQ["beat_schedule"]` in `settings.py` runs `cams.tasks.check_cams` every 2 hours: it polls every cam URL and sets `Cam.offline_since`. Tasks live in each app's `tasks.py` (autodiscovered). Async tasks must call `close_old_connections` via `sync_to_async` themselves (see `check_cams`): the async ORM's connections live on asgiref's executor thread, out of reach of potatoq's per-task cleanup.
+- Background work runs on a separate [potatoq](https://anze3db.github.io/potatoq/) worker (`manage.py potatoq worker`, the `surfcams-worker` systemd service), using the default database as the broker. `POTATOQ["beat_schedule"]` in `settings.py` runs `cams.tasks.check_cams` every 2 hours: it polls every cam URL and sets `Cam.offline_since`. Tasks live in each app's `tasks.py` (autodiscovered).
 - `surfline/` — `SurflineFetcher` wraps the unofficial Surfline API (`services.surfline.com`). It uses `curl_cffi` with `impersonate="chrome"` (Surfline blocks normal clients) and `stamina.retry` for resilience. `fetch_all()` concurrently fetches tides/sunlight/wind/waves; `get_surfline_data` reshapes them into per-day forecast rows + JSON chart data rendered into `surfline.html`.
 - `api/` — `django-ninja` JSON API (`api.urls.api`) mounted at `/api/`. Schemas alias snake_case model fields to camelCase JSON. Returns 503 on `AssertionError` (used by `/api/health`).
 
