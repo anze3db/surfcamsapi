@@ -19,7 +19,7 @@ uv run python manage.py import_json <file.json>  # Replace all cams/categories f
 uv run python manage.py collectstatic --no-input # Required before tests in CI
 ```
 
-Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against a Postgres service container (production runs on Postgres too), and on `main` deploys via SSH by running `.deploy/update.sh` on the server, which also restarts `surfcams-worker`. Tests that enqueue and `drain()` tasks need `TransactionTestCase` (tasks are sent on commit).
+Test files are named `tests.py` (not `test_*.py`) — see `[tool.pytest.ini_options]` in `pyproject.toml`. CI (`.github/workflows/python.yml`) runs `collectstatic` then `pytest` against a Postgres service container (production runs on Postgres too), and on `main` deploys via SSH by running `.deploy/update.sh` on the server, which also restarts `surfcams-worker`. Tests that enqueue and `drain()` tasks need `TransactionTestCase` (tasks are sent on commit) and should call `potatoq.testing.reset(current_app())` in `setUp`: with `--reuse-db` the broker's queued tasks and periodic claims outlive a run.
 
 ## Architecture
 

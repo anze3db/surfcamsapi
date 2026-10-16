@@ -5,7 +5,7 @@ import httpx
 from django.test import TestCase, TransactionTestCase, override_settings
 from model_bakery import baker
 from potatoq import current_app
-from potatoq.testing import drain, due
+from potatoq.testing import drain, due, reset
 
 from cams.tasks import check_cams
 from cams.models import Cam
@@ -17,6 +17,8 @@ OFFLINE_SINCE = datetime(2026, 1, 1, tzinfo=UTC)
 @override_settings(P_REFERER="https://referer.example")
 class TestCheckCams(TransactionTestCase):
     def setUp(self):
+        # The test database is reused (--reuse-db), and so is the broker in it.
+        reset(current_app())
         self.online = baker.make(Cam, url="https://cams.example/online.m3u8")
         self.back_online = baker.make(
             Cam, url="https://cams.example/back.m3u8", offline_since=OFFLINE_SINCE
