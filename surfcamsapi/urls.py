@@ -21,7 +21,7 @@ from django.contrib import admin
 from django.contrib.auth import alogin, authenticate
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import redirect, render
 from django.urls import include, path
 
@@ -69,14 +69,35 @@ async def cams(request):
 
 @login_required
 async def proxy(request, url: str):
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            f"https://{url}",
-            headers={
-                "Referer": settings.P_REFERER,
-            },
+    client = httpx.AsyncClient()
+    try:
+        upstream = await client.send(
+            client.build_request(
+                "GET", f"https://{url}", headers={"Referer": settings.P_REFERER}
+            ),
+            stream=True,
         )
-        return HttpResponse(response.content, content_type="application/x-mpegURL")
+    except BaseException:
+        await client.aclose()
+        raise
+
+    # Stream segments through instead of buffering them whole, so the player
+    # gets its first bytes as soon as the upstream sends them.
+    async def body():
+        try:
+            async for chunk in upstream.aiter_bytes():
+                yield chunk
+        finally:
+            await upstream.aclose()
+            await client.aclose()
+
+    # Apple's native HLS player relies on the upstream's status and content
+    # type (playlist vs. MPEG-TS segment), so pass both through.
+    return StreamingHttpResponse(
+        body(),
+        status=upstream.status_code,
+        content_type=upstream.headers.get("Content-Type", "application/octet-stream"),
+    )
 
 
 async def login_view(request):

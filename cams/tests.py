@@ -1,7 +1,9 @@
 from datetime import UTC, datetime, timedelta
+from functools import partial
 from unittest import mock
 
 import httpx
+from django.contrib.auth.models import User
 from django.test import TestCase, TransactionTestCase, override_settings
 from model_bakery import baker
 from potatoq import current_app
@@ -88,3 +90,62 @@ class TestSchedule(TestCase):
                 ("check-cams", datetime(2026, 10, 9, 16, 0, tzinfo=UTC)),
             ],
         )
+
+
+@override_settings(P_REFERER="https://referer.example")
+class TestProxy(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = baker.make(User)
+
+    def setUp(self):
+        self.async_client.force_login(self.user)
+        self.requests = []
+
+    def upstream(self, status, content_type, body):
+        def handler(request):
+            self.requests.append(request)
+            return httpx.Response(
+                status, headers={"Content-Type": content_type}, content=body
+            )
+
+        client = partial(httpx.AsyncClient, transport=httpx.MockTransport(handler))
+        return mock.patch.object(httpx, "AsyncClient", client)
+
+    async def get(self, path):
+        response = await self.async_client.get(path)
+        body = b"".join([chunk async for chunk in response.streaming_content])
+        return response, body
+
+    async def test_proxies_playlist(self):
+        with self.upstream(200, "application/vnd.apple.mpegurl", b"#EXTM3U"):
+            response, body = await self.get("/p/cams.example/live/playlist.m3u8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/vnd.apple.mpegurl")
+        self.assertEqual(body, b"#EXTM3U")
+        [request] = self.requests
+        self.assertEqual(str(request.url), "https://cams.example/live/playlist.m3u8")
+        self.assertEqual(request.headers["Referer"], "https://referer.example")
+
+    async def test_proxies_segment(self):
+        with self.upstream(200, "video/mp2t", b"\x47" * 188):
+            response, body = await self.get("/p/cams.example/live/media_1.ts")
+
+        self.assertEqual(response["Content-Type"], "video/mp2t")
+        self.assertEqual(body, b"\x47" * 188)
+
+    async def test_passes_through_upstream_errors(self):
+        with self.upstream(404, "text/html", b"Not Found"):
+            response, body = await self.get("/p/cams.example/live/media_0.ts")
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(body, b"Not Found")
+
+    async def test_requires_login(self):
+        await self.async_client.alogout()
+        with self.upstream(200, "video/mp2t", b""):
+            response = await self.async_client.get("/p/cams.example/live/media_1.ts")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.requests, [])
