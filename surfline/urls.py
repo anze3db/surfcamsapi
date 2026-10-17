@@ -194,6 +194,7 @@ class SurflineFetcher:
         display_days = []
 
         for sun in sunlight_json["data"]["sunlight"]:
+
             def to_date(ts, offset):
                 return datetime.fromtimestamp(ts + offset * 3600, tz=UTC)
 
@@ -205,19 +206,35 @@ class SurflineFetcher:
                 d = datetime.fromtimestamp(ts + offset * 3600, tz=UTC)
                 return day_offset + d.hour * 60 + d.minute
 
-            chart_data.append({
-                "dawn": to_minutes(sun["dawn"], sun["dawnUTCOffset"]),
-                "sunrise": to_minutes(sun["sunrise"], sun["sunriseUTCOffset"]),
-                "sunset": to_minutes(sun["sunset"], sun["sunsetUTCOffset"]),
-                "dusk": to_minutes(sun["dusk"], sun["duskUTCOffset"]),
-            })
+            chart_data.append(
+                {
+                    "dawn": to_minutes(sun["dawn"], sun["dawnUTCOffset"]),
+                    "sunrise": to_minutes(sun["sunrise"], sun["sunriseUTCOffset"]),
+                    "sunset": to_minutes(sun["sunset"], sun["sunsetUTCOffset"]),
+                    "dusk": to_minutes(sun["dusk"], sun["duskUTCOffset"]),
+                }
+            )
 
-            display_days.append([
-                {"date": to_date(sun["dawn"], sun["dawnUTCOffset"]), "type": "🔅 First Light"},
-                {"date": to_date(sun["sunrise"], sun["sunriseUTCOffset"]), "type": "☀️ Sunrise"},
-                {"date": to_date(sun["sunset"], sun["sunsetUTCOffset"]), "type": "☀️ Sunset"},
-                {"date": to_date(sun["dusk"], sun["duskUTCOffset"]), "type": "🔅 Last Light"},
-            ])
+            display_days.append(
+                [
+                    {
+                        "date": to_date(sun["dawn"], sun["dawnUTCOffset"]),
+                        "type": "🔅 First Light",
+                    },
+                    {
+                        "date": to_date(sun["sunrise"], sun["sunriseUTCOffset"]),
+                        "type": "☀️ Sunrise",
+                    },
+                    {
+                        "date": to_date(sun["sunset"], sun["sunsetUTCOffset"]),
+                        "type": "☀️ Sunset",
+                    },
+                    {
+                        "date": to_date(sun["dusk"], sun["duskUTCOffset"]),
+                        "type": "🔅 Last Light",
+                    },
+                ]
+            )
 
         return {
             "display_days": display_days,
@@ -227,7 +244,9 @@ class SurflineFetcher:
     async def fetch_wind(self):
         res = []
         for d in (await self.fetch("wind"))["data"]["wind"]:
-            date = datetime.fromtimestamp(d["timestamp"] + d["utcOffset"] * 3600, tz=UTC)
+            date = datetime.fromtimestamp(
+                d["timestamp"] + d["utcOffset"] * 3600, tz=UTC
+            )
             if date.hour % 3 != 0 or date.hour < 4:
                 continue
             direction_type = d["directionType"]
@@ -279,7 +298,9 @@ class SurflineFetcher:
         swells_by_timestamp = {s["timestamp"]: s for s in swell_json["data"]["swells"]}
         res = []
         for d in surf_json["data"]["surf"]:
-            date = datetime.fromtimestamp(d["timestamp"] + d["utcOffset"] * 3600, tz=UTC)
+            date = datetime.fromtimestamp(
+                d["timestamp"] + d["utcOffset"] * 3600, tz=UTC
+            )
             if date.hour % 3 != 0 or date.hour < 4:
                 continue
             swell = swells_by_timestamp.get(d["timestamp"], {})
@@ -306,7 +327,10 @@ class SurflineFetcher:
             return await coro
         except Exception:
             logger.warning(
-                "Surfline %s fetch failed for spot %s", name, self.spot_id, exc_info=True
+                "Surfline %s fetch failed for spot %s",
+                name,
+                self.spot_id,
+                exc_info=True,
             )
             return default
 

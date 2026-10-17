@@ -38,8 +38,18 @@ class SurflineFetcherTests(TestCase):
                         "timestamp": timestamp(6),
                         "power": 120.5,
                         "swells": [
-                            {"height": 0.5, "period": 8, "impact": 0.1, "direction": 10},
-                            {"height": 1.5, "period": 13, "impact": 0.9, "direction": 220},
+                            {
+                                "height": 0.5,
+                                "period": 8,
+                                "impact": 0.1,
+                                "direction": 10,
+                            },
+                            {
+                                "height": 1.5,
+                                "period": 13,
+                                "impact": 0.9,
+                                "direction": 220,
+                            },
                         ],
                     }
                 ]
