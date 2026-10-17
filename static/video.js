@@ -41,7 +41,11 @@ class Video {
         });
     }
     loadSource() {
-        if (Hls.isSupported()) {
+        // Where hls.js would fall back to ManagedMediaSource (iOS/iPadOS), the
+        // system pauses buffering at will and live streams stall, so let
+        // Apple's native player handle HLS instead.
+        const preferNative = window.ManagedMediaSource && this.video.canPlayType('application/vnd.apple.mpegurl');
+        if (!preferNative && Hls.isSupported()) {
             var hls = new Hls();
             hls.loadSource(this.url);
             hls.attachMedia(this.video);
@@ -53,16 +57,14 @@ class Video {
                 }
             });
         }
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
             this.video.src = this.url;
-            this.video.addEventListener('error', (event, data) => {
-                console.log("error", event, data);
+            this.video.addEventListener('error', (event) => {
+                console.log("error", event, this.video.error);
                 if (!this.error.textContent) {
                     this.error.style.display = 'block';
-
-                    this.error.textContent += data.details + " ";
+                    this.error.textContent += (this.video.error?.message || "Playback error") + " ";
                 }
-
             });
         }
         else {
