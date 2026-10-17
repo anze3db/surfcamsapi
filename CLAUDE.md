@@ -7,15 +7,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This project uses `uv` for dependency management and `just` as a task runner.
 
 ```bash
-uv sync --locked              # Install/sync dependencies from uv.lock
+just install                  # Install/sync dependencies from uv.lock
 just server                   # Run dev server on port 8003 (= uv run manage.py runserver 8003)
 just worker                   # Run the potatoq worker (also runs the periodic schedule)
-uv run pytest                 # Run the full test suite (pytest-django, reuses the DB)
-uv run pytest api/tests.py    # Run a single test file
-uv run pytest api/tests.py::TestHealthApi::test_health  # Run a single test
-uv run ruff check .           # Lint
-uv run djlint templates/      # Lint Django templates
-uv run python manage.py import_json <file.json>  # Replace all cams/categories from a JSON export
+just test                     # Run the full test suite (pytest-django, reuses the DB)
+just test api/tests.py        # Run a single test file
+just test api/tests.py::TestHealthApi::test_health  # Run a single test
+just lint                     # ruff check + ruff format --check
+just format                   # ruff check --fix + ruff format
+just lint-templates           # Lint Django templates (djlint; inline-style warnings are expected)
+just import-json <file.json>  # Replace all cams/categories from a JSON export
+just check                    # lint + test; run before calling work done
 uv run python manage.py collectstatic --no-input # Required before tests in CI
 ```
 
