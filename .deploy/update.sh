@@ -2,13 +2,13 @@
 set -e
 pushd "$(dirname "$0")/.."
 git pull
-python_before=$(readlink -f .venv/bin/python || true)
 uv sync --locked
 uv run python manage.py collectstatic --noinput
 uv run python manage.py migrate
-# A reload (HUP) forks new workers from the running master, which keeps its
-# old interpreter, so a Python upgrade needs a full restart.
-if [ "$(readlink -f .venv/bin/python)" = "$python_before" ]; then
+# A reload (HUP) forks new workers from the running master, which keeps the
+# interpreter it started with, so restart when the venv's Python differs.
+running_python=$(readlink -f "/proc/$(systemctl show -p MainPID --value surfcams)/exe" || true)
+if [ "$running_python" = "$(readlink -f .venv/bin/python)" ]; then
     sudo systemctl reload surfcams
 else
     sudo systemctl restart surfcams
