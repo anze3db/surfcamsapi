@@ -51,3 +51,17 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           bash projects/surfcams/.deploy/update.sh
+    - uses: actions/checkout@v4
+      with:
+        # The release's commits resolve the Sentry issues they name ("Fixes SURFCAMSAPI-123")
+        fetch-depth: 0
+    - name: Create Sentry release
+      uses: getsentry/action-release@v3
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: anze3db
+        SENTRY_PROJECT: surfcamsapi
+      with:
+        environment: production
+        # The SDK auto-detects the server checkout's commit SHA (git pull) as its release
+        release: ${{ github.sha }}
